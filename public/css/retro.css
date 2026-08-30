@@ -1,0 +1,380 @@
+﻿/* RPG-Zero - Thème Rétro Web Dark Fantasy */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=MedievalSharp&family=VT323&display=swap');
+
+:root {
+    --bg-dark: #121016;
+    --bg-card: #1c1824;
+    --bg-card-header: #262033;
+    --border-gold: #c59b27;
+    --border-dark-gold: #73570e;
+    --text-primary: #f0e6d2;
+    --text-muted: #a69e90;
+    --accent-red: #c0392b;
+    --accent-blue: #2980b9;
+    --accent-green: #27ae60;
+    --accent-gold: #f1c40f;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(#251d2f 1px, transparent 1px),
+        radial-gradient(#1f1827 1px, var(--bg-dark) 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+    color: var(--text-primary);
+    font-family: 'MedievalSharp', 'Georgia', serif;
+    font-size: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header & Top Bar */
+.top-nav {
+    background-color: var(--bg-card-header);
+    border-bottom: 2px solid var(--border-gold);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.brand-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--accent-gold);
+    text-decoration: none;
+    text-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+}
+
+.nav-links a {
+    color: var(--text-primary);
+    text-decoration: none;
+    margin-left: 15px;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.nav-links a:hover {
+    border-color: var(--border-gold);
+    background: rgba(197, 155, 39, 0.15);
+}
+
+/* Quick Status Header (Perso connecté) */
+.hero-status-strip {
+    background: #181420;
+    border-bottom: 1px solid #382e4a;
+    padding: 8px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Main Container */
+.main-wrapper {
+    flex: 1;
+    max-width: 1000px;
+    width: 100%;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+/* Box & Cards Rétro */
+.retro-box {
+    background: var(--bg-card);
+    border: 2px solid var(--border-gold);
+    border-radius: 6px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.7), inset 0 0 15px rgba(0,0,0,0.5);
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.retro-box-header {
+    background: var(--bg-card-header);
+    border-bottom: 2px solid var(--border-gold);
+    padding: 12px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    color: var(--accent-gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.retro-box-body {
+    padding: 20px;
+}
+
+/* Progress Bars */
+.progress-bar-container {
+    background: #0d0b11;
+    border: 1px solid #4a3e5c;
+    border-radius: 12px;
+    height: 18px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    margin-top: 4px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progress-bar-fill.hp {
+    background: linear-gradient(90deg, #962d22, #e74c3c);
+}
+
+.progress-bar-fill.ap {
+    background: linear-gradient(90deg, #1f618d, #3498db);
+}
+
+.progress-bar-fill.xp {
+    background: linear-gradient(90deg, #b7950b, #f1c40f);
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-family: monospace;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+}
+
+/* Buttons */
+.btn-retro {
+    background: linear-gradient(180deg, #443224, #26190f);
+    color: var(--text-primary);
+    border: 2px solid var(--border-gold);
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-family: 'MedievalSharp', 'Georgia', serif;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-retro:hover {
+    background: linear-gradient(180deg, #5c4431, #382516);
+    border-color: #ffd700;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(241, 196, 15, 0.3);
+}
+
+.btn-retro:active {
+    transform: translateY(1px);
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #8a2016, #5c1109);
+    border-color: #e74c3c;
+}
+.btn-primary:hover {
+    background: linear-gradient(180deg, #ab281c, #73170e);
+    border-color: #ff6b5b;
+}
+
+.btn-blue {
+    background: linear-gradient(180deg, #1c527a, #0f3049);
+    border-color: #3498db;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--accent-gold);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #110e17;
+    border: 1px solid #5a4b6e;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--border-gold);
+    box-shadow: 0 0 8px rgba(197, 155, 39, 0.4);
+}
+
+/* Flash Messages */
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash-alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border: 1px solid;
+    font-size: 0.95rem;
+}
+
+.flash-error {
+    background: rgba(192, 57, 43, 0.2);
+    border-color: #e74c3c;
+    color: #ff9999;
+}
+
+.flash-success {
+    background: rgba(39, 174, 96, 0.2);
+    border-color: #2ecc71;
+    color: #a3f7bf;
+}
+
+.flash-warning {
+    background: rgba(243, 156, 18, 0.2);
+    border-color: #f39c12;
+    color: #fde3a7;
+}
+
+.flash-info {
+    background: rgba(41, 128, 185, 0.2);
+    border-color: #3498db;
+    color: #abd5f3;
+}
+
+/* Combat Log Arena */
+.battle-arena-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .battle-arena-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.combat-log-box {
+    background: #0d0a14;
+    border: 1px solid #3c3050;
+    border-radius: 4px;
+    padding: 14px;
+    max-height: 260px;
+    overflow-y: auto;
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.combat-log-entry {
+    padding: 6px 0;
+    border-bottom: 1px dotted #2b2238;
+}
+
+.combat-log-entry.crit {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.combat-log-entry.defeat {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.combat-log-entry.victory {
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+/* Hub Grid */
+.hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.hub-card {
+    background: #16121f;
+    border: 1px solid #4a3e5c;
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.hub-card:hover {
+    border-color: var(--border-gold);
+    transform: translateY(-3px);
+}
+
+.hub-card-icon {
+    font-size: 2.8rem;
+    margin-bottom: 10px;
+}
+
+/* Class Selection Cards */
+.class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.class-card {
+    background: #14101c;
+    border: 2px solid #3d324f;
+    border-radius: 6px;
+    padding: 15px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.class-card input[type="radio"] {
+    display: none;
+}
+
+.class-card:hover {
+    border-color: var(--border-gold);
+}
+
+.class-card.selected,
+.class-card:has(input[type="radio"]:checked) {
+    border-color: var(--accent-gold);
+    background: #251c33;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+}
