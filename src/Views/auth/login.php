@@ -1,4 +1,4 @@
-﻿<div class="retro-box" style="max-width: 460px; margin: 40px auto;">
+<div class="retro-box" style="max-width: 460px; margin: 40px auto;">
     <div class="retro-box-header">
         <span>⚔️ Entrer dans le Royaume</span>
     </div>

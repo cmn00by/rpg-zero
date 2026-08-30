@@ -1,4 +1,4 @@
-﻿<div class="retro-box" style="max-width: 650px; margin: 20px auto;">
+<div class="retro-box" style="max-width: 650px; margin: 20px auto;">
     <div class="retro-box-header">
         <span>✨ Création de votre Héros</span>
     </div>

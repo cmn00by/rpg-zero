@@ -1,4 +1,4 @@
-﻿<div id="battle-container" class="retro-box">
+<div id="battle-container" class="retro-box">
     <div class="retro-box-header">
         <span>⚔️ Arène de Combat - Tour <?= $battle['turn'] ?></span>
         <span><?= htmlspecialchars($battle['monster_name']) ?> (Niv. <?= $battle['monster_level'] ?>)</span>

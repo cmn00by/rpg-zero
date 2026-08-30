@@ -1,4 +1,4 @@
-﻿<div class="retro-box" style="max-width: 600px; margin: 0 auto;">
+<div class="retro-box" style="max-width: 600px; margin: 0 auto;">
     <div class="retro-box-header">
         <span>📜 Fiche de <?= htmlspecialchars($character['name']) ?></span>
         <span><?= $character['class_icon'] ?> <?= htmlspecialchars($character['class_name']) ?></span>

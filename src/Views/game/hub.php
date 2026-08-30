@@ -1,4 +1,4 @@
-﻿<div class="retro-box">
+<div class="retro-box">
     <div class="retro-box-header">
         <span>🏰 La Cité d'Orépierre</span>
         <span style="font-size: 0.9rem; color: var(--text-muted);">Lieu de paix et de commerce</span>

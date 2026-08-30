@@ -1,4 +1,4 @@
-﻿# RPG-Zero 🗡️🛡️
+# RPG-Zero 🗡️🛡️
 
 Un RPG rétro au tour par tour sur navigateur, inspiré des jeux web des années 2000 (*Mountyhall*, *Ogame*, *Shakes & Fidget*).
 

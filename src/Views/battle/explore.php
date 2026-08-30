@@ -1,4 +1,4 @@
-﻿<div class="retro-box">
+<div class="retro-box">
     <div class="retro-box-header">
         <span>🌲 La Forêt Sombre</span>
         <span>Coût : 5 ⚡ PA</span>

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 use Core\Session;
 use Models\Character;
 

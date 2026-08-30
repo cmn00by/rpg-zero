@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 namespace Models;
 
 use Core\Database;

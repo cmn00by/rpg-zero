@@ -1,4 +1,4 @@
-﻿<div id="battle-container" class="retro-box">
+<div id="battle-container" class="retro-box">
     <?php
     \Core\View::partial('battle/partial_combat_log', [
         'battle' => $battle,

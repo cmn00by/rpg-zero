@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 namespace Models;
 
 use Core\Database;
@@ -68,7 +68,7 @@ class Character {
                 strength, agility, intelligence, last_activity
             ) VALUES (
                 :user_id, :class_id, :name, 1, 0, 100, 50,
-                :hp, :hp, :ap, :ap,
+                :current_hp, :max_hp, :current_ap, :max_ap,
                 :str, :agi, :int, NOW()
             )
         ");
@@ -77,8 +77,10 @@ class Character {
             'user_id' => $userId,
             'class_id' => $classId,
             'name' => $name,
-            'hp' => $class['base_hp'],
-            'ap' => $class['base_ap'],
+            'current_hp' => $class['base_hp'],
+            'max_hp' => $class['base_hp'],
+            'current_ap' => $class['base_ap'],
+            'max_ap' => $class['base_ap'],
             'str' => $class['base_str'],
             'agi' => $class['base_agi'],
             'int' => $class['base_int'],
