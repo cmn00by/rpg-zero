@@ -209,6 +209,20 @@ body {
     border-color: #3498db;
 }
 
+.btn-stat-plus {
+    padding: 3px 8px;
+    font-size: 0.85rem;
+    background: linear-gradient(180deg, #7d6608, #4d3e05);
+    border-color: #f1c40f;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 3px;
+}
+.btn-stat-plus:hover {
+    background: linear-gradient(180deg, #b7950b, #7d6608);
+    box-shadow: 0 0 8px rgba(241, 196, 15, 0.6);
+}
+
 /* Form Styles */
 .form-group {
     margin-bottom: 16px;

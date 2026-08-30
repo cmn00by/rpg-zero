@@ -60,4 +60,29 @@ class CharacterController {
             'character' => $character
         ]);
     }
+
+    public function allocateStat(): void {
+        $charId = Session::getCharacterId();
+        $stat = trim($_POST['stat'] ?? '');
+
+        $result = Character::allocateStat($charId, $stat);
+
+        if (!$result['success']) {
+            Session::setFlash('error', $result['error']);
+        } else {
+            Session::setFlash('success', 'Point de caractéristique attribué avec succès !');
+        }
+
+        $character = $result['character'] ?? Character::findById($charId);
+
+        if (isset($_SERVER['HTTP_HX_REQUEST'])) {
+            View::partial('game/partial_stats', [
+                'character' => $character
+            ]);
+            exit;
+        }
+
+        header('Location: /game/stats');
+        exit;
+    }
 }

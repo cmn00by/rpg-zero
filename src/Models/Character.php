@@ -60,14 +60,17 @@ class Character {
             throw new \Exception("Classe introuvable");
         }
 
+        $level2 = Level::getByLevel(2);
+        $xpNext = $level2 ? (int)$level2['xp_required'] : 80;
+
         $db = Database::getConnection();
         $stmt = $db->prepare("
             INSERT INTO characters (
-                user_id, class_id, name, level, xp, xp_next, gold,
+                user_id, class_id, name, title, level, xp, xp_next, gold, stat_points,
                 current_hp, max_hp, current_ap, max_ap,
                 strength, agility, intelligence, last_activity
             ) VALUES (
-                :user_id, :class_id, :name, 1, 0, 100, 50,
+                :user_id, :class_id, :name, 'Novice', 1, 0, :xp_next, 50, 0,
                 :current_hp, :max_hp, :current_ap, :max_ap,
                 :str, :agi, :int, NOW()
             )
@@ -77,6 +80,7 @@ class Character {
             'user_id' => $userId,
             'class_id' => $classId,
             'name' => $name,
+            'xp_next' => $xpNext,
             'current_hp' => $class['base_hp'],
             'max_hp' => $class['base_hp'],
             'current_ap' => $class['base_ap'],
@@ -176,67 +180,127 @@ class Character {
 
         $newXp = $char['xp'] + $xpGain;
         $newGold = $char['gold'] + $goldGain;
-        $level = $char['level'];
-        $xpNext = $char['xp_next'];
-        $maxHp = $char['max_hp'];
-        $maxAp = $char['max_ap'];
-        $strength = $char['strength'];
-        $agility = $char['agility'];
-        $intelligence = $char['intelligence'];
+        $level = (int)$char['level'];
+        $xpNext = (int)$char['xp_next'];
+        $statPoints = (int)$char['stat_points'];
+        $title = $char['title'];
         $leveledUp = false;
+        $statPointsGained = 0;
+        $goldBonusGained = 0;
 
-        // Formule de montée de niveau
+        // Gestion du passage de niveau via la table 'levels'
         while ($newXp >= $xpNext) {
             $newXp -= $xpNext;
             $level++;
-            $xpNext = (int)floor($xpNext * 1.5);
-            $maxHp += 15;
-            $maxAp += 2;
-            $strength += 2;
-            $agility += 2;
-            $intelligence += 2;
+            $nextLvlConfig = Level::getByLevel($level);
+
+            if ($nextLvlConfig) {
+                $statPointsReward = (int)$nextLvlConfig['stat_points_reward'];
+                $goldReward = (int)$nextLvlConfig['gold_reward'];
+                $title = $nextLvlConfig['title'];
+                $statPoints += $statPointsReward;
+                $newGold += $goldReward;
+                $statPointsGained += $statPointsReward;
+                $goldBonusGained += $goldReward;
+            } else {
+                $statPoints += 5;
+                $newGold += 100;
+                $statPointsGained += 5;
+                $goldBonusGained += 100;
+            }
+
+            // Calcul du palier d'XP suivant
+            $afterNextLvlConfig = Level::getByLevel($level + 1);
+            if ($afterNextLvlConfig) {
+                $xpNext = (int)$afterNextLvlConfig['xp_required'];
+            } else {
+                $xpNext = (int)floor($xpNext * 1.4);
+            }
+
             $leveledUp = true;
         }
 
-        $currentHp = $leveledUp ? $maxHp : $char['current_hp'];
-        $currentAp = $leveledUp ? $maxAp : $char['current_ap'];
+        $currentHp = $leveledUp ? $char['max_hp'] : $char['current_hp'];
+        $currentAp = $leveledUp ? $char['max_ap'] : $char['current_ap'];
 
         $db = Database::getConnection();
         $stmt = $db->prepare("
             UPDATE characters SET 
                 level = :level,
+                title = :title,
                 xp = :xp,
                 xp_next = :xp_next,
                 gold = :gold,
-                max_hp = :max_hp,
+                stat_points = :stat_points,
                 current_hp = :current_hp,
-                max_ap = :max_ap,
                 current_ap = :current_ap,
-                strength = :strength,
-                agility = :agility,
-                intelligence = :intelligence,
                 last_activity = NOW()
             WHERE id = :id
         ");
 
         $stmt->execute([
             'level' => $level,
+            'title' => $title,
             'xp' => $newXp,
             'xp_next' => $xpNext,
             'gold' => $newGold,
-            'max_hp' => $maxHp,
+            'stat_points' => $statPoints,
             'current_hp' => $currentHp,
-            'max_ap' => $maxAp,
             'current_ap' => $currentAp,
-            'strength' => $strength,
-            'agility' => $agility,
-            'intelligence' => $intelligence,
             'id' => $id
         ]);
 
         return [
             'leveled_up' => $leveledUp,
-            'new_level' => $level
+            'new_level' => $level,
+            'title' => $title,
+            'stat_points_gained' => $statPointsGained,
+            'gold_bonus_gained' => $goldBonusGained
+        ];
+    }
+
+    /**
+     * Distribution d'un point de caractéristique
+     */
+    public static function allocateStat(int $id, string $stat): array {
+        $char = self::findById($id);
+        if (!$char || (int)$char['stat_points'] <= 0) {
+            return ['success' => false, 'error' => 'Aucun point de caractéristique disponible.'];
+        }
+
+        $allowedStats = ['strength', 'agility', 'intelligence', 'max_hp', 'max_ap'];
+        if (!in_array($stat, $allowedStats, true)) {
+            return ['success' => false, 'error' => 'Caractéristique invalide.'];
+        }
+
+        $db = Database::getConnection();
+
+        if ($stat === 'max_hp') {
+            $stmt = $db->prepare("
+                UPDATE characters 
+                SET max_hp = max_hp + 10, current_hp = current_hp + 10, stat_points = stat_points - 1, last_activity = NOW()
+                WHERE id = :id AND stat_points > 0
+            ");
+        } elseif ($stat === 'max_ap') {
+            $stmt = $db->prepare("
+                UPDATE characters 
+                SET max_ap = max_ap + 1, current_ap = current_ap + 1, stat_points = stat_points - 1, last_activity = NOW()
+                WHERE id = :id AND stat_points > 0
+            ");
+        } else {
+            $stmt = $db->prepare("
+                UPDATE characters 
+                SET {$stat} = {$stat} + 1, stat_points = stat_points - 1, last_activity = NOW()
+                WHERE id = :id AND stat_points > 0
+            ");
+        }
+
+        $stmt->execute(['id' => $id]);
+
+        $updatedChar = self::findById($id);
+        return [
+            'success' => true,
+            'character' => $updatedChar
         ];
     }
 }

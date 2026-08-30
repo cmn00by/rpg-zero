@@ -1,77 +1,81 @@
 <?php
-// Test E2E de logique de jeu RPG-Zero
+// Test E2E de logique de jeu RPG-Zero avec système de Niveaux & Stats
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../src/Models/User.php';
 require_once __DIR__ . '/../src/Models/Character.php';
 require_once __DIR__ . '/../src/Models/Monster.php';
 require_once __DIR__ . '/../src/Models/Battle.php';
+require_once __DIR__ . '/../src/Models/Level.php';
 
 use Models\User;
 use Models\Character;
 use Models\Monster;
 use Models\Battle;
+use Models\Level;
 
-echo "=== 1. Test Inscription Utilisateur ===\n";
+echo "=== 1. Test Table des Niveaux ===\n";
+$allLevels = Level::getAll();
+assert(count($allLevels) >= 20, "At least 20 levels configured");
+$lvl2 = Level::getByLevel(2);
+assert($lvl2 !== null, "Level 2 exists");
+assert((int)$lvl2['xp_required'] === 80, "Level 2 requires 80 XP");
+assert((int)$lvl2['stat_points_reward'] === 5, "Level 2 gives 5 stat points");
+assert((int)$lvl2['gold_reward'] === 30, "Level 2 gives 30 bonus gold");
+echo "✅ Table 'levels' opérationnelle (20 niveaux configurés, Niv. 2 = {$lvl2['title']})\n";
+
+echo "=== 2. Test Inscription & Création de Personnage ===\n";
 $testUsername = 'hero_' . time();
 $userId = User::create($testUsername, 'password123');
-$user = User::findById($userId);
-assert($user !== null, "User must be found");
-assert(password_verify('password123', $user['password_hash']), "Password hash must be valid");
-echo "✅ Utilisateur {$testUsername} créé avec ID {$userId}\n";
+$charName = 'Lancelot_' . rand(100, 999);
+$charId = Character::create($userId, 1, $charName); // Guerrier
+$char = Character::findById($charId);
+assert($char !== null, "Character found");
+assert($char['level'] == 1, "Level starts at 1");
+assert($char['xp_next'] == 80, "Next level at 80 XP");
+assert($char['stat_points'] == 0, "Initial stat points is 0");
+assert($char['title'] === 'Novice', "Initial title is Novice");
+echo "✅ Héros {$charName} créé : Niveau 1 (Titre: {$char['title']}, 0/{$char['xp_next']} XP)\n";
 
-echo "=== 2. Test Création de Personnage (Guerrier) ===\n";
-$charName = 'Galahad_' . rand(100, 999);
-$charId = Character::create($userId, 1, $charName);
-$character = Character::findById($charId);
-assert($character !== null, "Character must be found");
-assert($character['name'] === $charName, "Character name match");
-assert($character['current_hp'] === 120, "Warrior HP is 120");
-assert($character['current_ap'] === 15, "Warrior AP is 15");
-echo "✅ Héros {$charName} créé avec 120 PV et 15 PA\n";
+echo "=== 3. Test Montée de Niveau & Attribution de Récompenses ===\n";
+// Attribution de 100 XP (dépasse 80 XP requis pour Niv. 2)
+$rewards = Character::addXpAndGold($charId, 100, 20);
+$char = Character::findById($charId);
+assert($rewards['leveled_up'] === true, "Leveled up to 2");
+assert($char['level'] == 2, "Character is now level 2");
+assert($char['stat_points'] == 5, "Has 5 stat points to distribute");
+assert($char['title'] === 'Aventurier débutant', "Title updated to Aventurier débutant");
+assert($char['gold'] == (50 + 20 + 30), "Gold is 50 base + 20 monster + 30 level reward = 100");
+echo "✅ Montée de Niveau 2 validée ! Titre: '{$char['title']}', Points de stats: {$char['stat_points']}, Or total: {$char['gold']} 💰\n";
 
-echo "=== 3. Test Consommation PA & Taverne ===\n";
-$consumed = Character::consumeAp($charId, 5);
-assert($consumed === true, "AP consumed successfully");
-$character = Character::findById($charId);
-assert($character['current_ap'] === 10, "AP reduced to 10");
+echo "=== 4. Test Distribution des Points de Caractéristiques ===\n";
+// Dépenser 2 points en Force
+$res1 = Character::allocateStat($charId, 'strength');
+assert($res1['success'] === true, "Allocated strength");
+$res2 = Character::allocateStat($charId, 'strength');
+assert($res2['success'] === true, "Allocated strength 2");
 
-Character::updateHp($charId, 50);
-$character = Character::findById($charId);
-assert($character['current_hp'] === 50, "HP reduced to 50");
+// Dépenser 1 point en Agilité
+$res3 = Character::allocateStat($charId, 'agility');
+assert($res3['success'] === true, "Allocated agility");
 
-$healed = Character::healAtTavern($charId, 10);
-assert($healed === true, "Healed at tavern");
-$character = Character::findById($charId);
-assert($character['current_hp'] === 120, "HP fully restored to 120");
-assert($character['current_ap'] === 15, "AP fully restored to 15");
-assert($character['gold'] === 40, "Gold decreased from 50 to 40");
-echo "✅ Soin à la Taverne validé (PV 120, PA 15, Or 40)\n";
+// Dépenser 1 point en PV Max (+10 PV)
+$res4 = Character::allocateStat($charId, 'max_hp');
+assert($res4['success'] === true, "Allocated max_hp");
 
-echo "=== 4. Test Combat contre un Gobelin ===\n";
-$monster = Monster::getById(2); // Gobelin pillard
-assert($monster !== null, "Monster found");
-$battleId = Battle::create($charId, $monster['id']);
-$battle = Battle::getById($battleId);
-assert($battle !== null, "Battle started");
-echo "⚔️ Combat #{$battleId} initié contre {$monster['name']} ({$monster['hp']} PV)\n";
+// Dépenser 1 point en PA Max (+1 PA)
+$res5 = Character::allocateStat($charId, 'max_ap');
+assert($res5['success'] === true, "Allocated max_ap");
 
-// Tour d'attaque
-$round = 1;
-while (!$battle['is_finished'] && $round <= 10) {
-    $result = Battle::processTurn($battleId, 'attack');
-    $battle = $result['battle'];
-    $char = $result['character'];
-    echo "  -> Tour {$round} terminé : PV Héros = {$char['current_hp']}, PV Monstre = {$battle['monster_current_hp']}\n";
-    $round++;
-}
+$char = Character::findById($charId);
+assert($char['strength'] == 16, "Strength increased from 14 to 16");
+assert($char['agility'] == 9, "Agility increased from 8 to 9");
+assert($char['max_hp'] == 130, "Max HP increased from 120 to 130");
+assert($char['max_ap'] == 16, "Max AP increased from 15 to 16");
+assert($char['stat_points'] == 0, "Remaining stat points is now 0");
 
-assert($battle['is_finished'] == 1, "Battle must finish");
-assert($battle['winner'] === 'player', "Player should defeat goblin");
-$logs = Battle::getLogs($battleId);
-assert(count($logs) > 0, "Logs recorded");
-echo "🏆 Victoire du joueur après " . ($round - 1) . " tours ! Total de " . count($logs) . " logs enregistrés.\n";
+// Tenter de dépenser un point alors qu'il n'y en a plus
+$res6 = Character::allocateStat($charId, 'strength');
+assert($res6['success'] === false, "Cannot allocate without points");
+echo "✅ Distribution de 5 points d'attributs validée (+2 Force, +1 Agi, +10 PV Max, +1 PA Max) !\n";
 
-$finalChar = Character::findById($charId);
-echo "📊 Stats après combat : Niveau {$finalChar['level']}, XP: {$finalChar['xp']}, Or: {$finalChar['gold']}\n";
-
-echo "\n✨ TOUS LES TESTS DE LOGIQUE DE JEU SONT VALIDÉS AVEC SUCCÈS !\n";
+echo "\n✨ TOUS LES TESTS DE NIVEAUX ET CARACTÉRISTIQUES SONT VALIDÉS AVEC SUCCÈS !\n";

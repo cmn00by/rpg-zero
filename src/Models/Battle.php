@@ -167,12 +167,15 @@ class Battle {
                     'xp' => $xpReward,
                     'gold' => $goldReward,
                     'leveled_up' => $levelResult['leveled_up'],
-                    'new_level' => $levelResult['new_level'] ?? $char['level']
+                    'new_level' => $levelResult['new_level'] ?? $char['level'],
+                    'title' => $levelResult['title'] ?? $char['title'],
+                    'stat_points_gained' => $levelResult['stat_points_gained'] ?? 0,
+                    'gold_bonus_gained' => $levelResult['gold_bonus_gained'] ?? 0
                 ];
 
                 self::addLog($battleId, $turn, 'system', 'victory', 0, "🏆 **VICTOIRE !** Le {$battle['monster_name']} s'effondre. Vous gagnez **+{$xpReward} XP** et **+{$goldReward} pièces d'or** !");
                 if ($levelResult['leveled_up']) {
-                    self::addLog($battleId, $turn, 'system', 'levelup', 0, "✨ **FÉLICITATIONS !** Vous passez au **Niveau {$levelResult['new_level']}** ! Vos statistiques augmentent et vos PV/PA sont restaurés !");
+                    self::addLog($battleId, $turn, 'system', 'levelup', 0, "✨ **FÉLICITATIONS !** Vous atteignez le **Niveau {$levelResult['new_level']}** (Titre : *{$levelResult['title']}*) ! Récompenses : **+{$levelResult['gold_bonus_gained']} 💰 or**, **+{$levelResult['stat_points_gained']} points d'attributs** à répartir sur votre fiche de héros !");
                 }
             }
         }

@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS `battle_logs`;
 DROP TABLE IF EXISTS `active_battles`;
 DROP TABLE IF EXISTS `characters`;
 DROP TABLE IF EXISTS `monsters`;
+DROP TABLE IF EXISTS `levels`;
 DROP TABLE IF EXISTS `character_classes`;
 DROP TABLE IF EXISTS `users`;
 
@@ -32,15 +33,25 @@ CREATE TABLE `character_classes` (
     `base_int` INT NOT NULL DEFAULT 10
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `levels` (
+    `level` INT PRIMARY KEY,
+    `xp_required` INT NOT NULL,
+    `stat_points_reward` INT NOT NULL DEFAULT 5,
+    `gold_reward` INT NOT NULL DEFAULT 50,
+    `title` VARCHAR(50) NOT NULL DEFAULT 'Aventurier'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `characters` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `user_id` INT NOT NULL,
     `class_id` INT NOT NULL,
     `name` VARCHAR(50) NOT NULL UNIQUE,
+    `title` VARCHAR(50) NOT NULL DEFAULT 'Novice',
     `level` INT NOT NULL DEFAULT 1,
     `xp` INT NOT NULL DEFAULT 0,
     `xp_next` INT NOT NULL DEFAULT 100,
     `gold` INT NOT NULL DEFAULT 50,
+    `stat_points` INT NOT NULL DEFAULT 0,
     `current_hp` INT NOT NULL DEFAULT 100,
     `max_hp` INT NOT NULL DEFAULT 100,
     `current_ap` INT NOT NULL DEFAULT 20,

@@ -43,6 +43,7 @@ $router->post('/character/create', [CharacterController::class, 'processCreate']
 $router->get('/game/hub', [GameController::class, 'showHub'], true, true);
 $router->post('/game/tavern/rest', [GameController::class, 'restAtTavern'], true, true);
 $router->get('/game/stats', [CharacterController::class, 'showStats'], true, true);
+$router->post('/character/allocate-stat', [CharacterController::class, 'allocateStat'], true, true);
 
 // Combats & Exploration
 $router->get('/battle/explore', [BattleController::class, 'showExplore'], true, true);
