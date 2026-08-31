@@ -1,283 +1,317 @@
-<div id="inventory-container" class="retro-box">
+<div id="inventory-container" class="retro-box" style="margin-bottom: 30px;">
     <div class="retro-box-header">
-        <span>🎒 Sac & Équipement de <?= htmlspecialchars($character['name']) ?></span>
-        <span>Niveau <?= $character['level'] ?> &bull; 💰 <?= $character['gold'] ?> pièces</span>
+        <div style="display:flex; align-items:center; gap: 12px;">
+            <span>🎒 Inventaire & Équipements</span>
+            <span style="font-size: 0.9rem; color: var(--text-muted); font-family: sans-serif;">
+                — <?= htmlspecialchars($character['name']) ?> (Niveau <?= $character['level'] ?>)
+            </span>
+        </div>
+        <div style="font-size: 0.95rem; display:flex; gap: 15px; align-items:center;">
+            <span style="color: var(--accent-gold);">💰 <strong><?= $character['gold'] ?></strong> pièces</span>
+            <span>⚡ PA: <strong><?= $character['current_ap'] ?>/<?= $character['effective_max_ap'] ?></strong></span>
+        </div>
     </div>
-    <div class="retro-box-body">
+
+    <div class="retro-box-body" style="padding: 25px;">
         
-        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 25px;">
+        <div class="inventory-main-layout">
             
-            <!-- COLONNE GAUCHE : MANNEQUIN D'ÉQUIPEMENT (6 SLOTS) -->
-            <div>
-                <h3 style="color: var(--accent-gold); margin-bottom: 12px; font-size: 1.15rem; display:flex; align-items:center; gap: 8px;">
-                    <span>👤 Équipement Actif</span>
-                </h3>
+            <!-- PANNEAU GAUCHE : MANNEQUIN D'ÉQUIPEMENT (PAPERDOLL) -->
+            <div class="mannequin-panel">
+                <div class="panel-header-title">
+                    <span>👤 Mannequin d'Équipement</span>
+                </div>
 
-                <div class="equipment-mannequin-grid">
+                <div class="paperdoll-grid">
                     
-                    <!-- 1. TÊTE -->
-                    <div class="equipment-slot-card <?= $equipped['head'] ? 'equipped' : 'empty' ?>">
-                        <div class="slot-icon-badge">🪖</div>
-                        <div class="slot-info">
-                            <span class="slot-title">Casque / Tête</span>
+                    <!-- LIGNE 1 : CASQUE (CENTRÉ) -->
+                    <div class="paperdoll-row" style="grid-column: 1 / span 2; justify-content: center;">
+                        <div class="doll-slot-card <?= $equipped['head'] ? 'equipped ' . $equipped['head']['rarity'] : 'empty' ?>" style="width: 220px;">
+                            <div class="doll-slot-icon">🪖</div>
+                            <div class="doll-slot-content">
+                                <span class="doll-slot-label">Casque / Tête</span>
+                                <?php if ($equipped['head']): ?>
+                                    <strong class="doll-item-name <?= $equipped['head']['rarity'] ?>"><?= htmlspecialchars($equipped['head']['name']) ?></strong>
+                                    <div class="doll-item-stats">
+                                        <?php if ($equipped['head']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['head']['bonus_defense'] ?> Def</span><?php endif; ?>
+                                        <?php if ($equipped['head']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['head']['bonus_hp'] ?> PV</span><?php endif; ?>
+                                        <?php if ($equipped['head']['bonus_str'] > 0): ?><span>💪 +<?= $equipped['head']['bonus_str'] ?></span><?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="doll-empty-text">Emplacement libre</span>
+                                <?php endif; ?>
+                            </div>
                             <?php if ($equipped['head']): ?>
-                                <strong class="item-name <?= $equipped['head']['rarity'] ?>"><?= htmlspecialchars($equipped['head']['name']) ?></strong>
-                                <div class="item-bonus-tags">
-                                    <?php if ($equipped['head']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['head']['bonus_defense'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['head']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['head']['bonus_hp'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['head']['bonus_str'] > 0): ?><span>💪 +<?= $equipped['head']['bonus_str'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['head']['bonus_agi'] > 0): ?><span>🏃 +<?= $equipped['head']['bonus_agi'] ?></span><?php endif; ?>
-                                </div>
-                            <?php else: ?>
-                                <span class="slot-empty-label">Emplacement libre</span>
+                                <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
+                                    <input type="hidden" name="slot" value="head">
+                                    <button type="submit" class="btn-retro btn-unequip" title="Déséquiper">✕</button>
+                                </form>
                             <?php endif; ?>
                         </div>
-                        <?php if ($equipped['head']): ?>
-                            <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
-                                <input type="hidden" name="slot" value="head">
-                                <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 6px;" title="Ranger dans le sac">Déséquiper</button>
-                            </form>
-                        <?php endif; ?>
                     </div>
 
-                    <!-- 2. TORSE -->
-                    <div class="equipment-slot-card <?= $equipped['chest'] ? 'equipped' : 'empty' ?>">
-                        <div class="slot-icon-badge">🥋</div>
-                        <div class="slot-info">
-                            <span class="slot-title">Armure / Torse</span>
-                            <?php if ($equipped['chest']): ?>
-                                <strong class="item-name <?= $equipped['chest']['rarity'] ?>"><?= htmlspecialchars($equipped['chest']['name']) ?></strong>
-                                <div class="item-bonus-tags">
-                                    <?php if ($equipped['chest']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['chest']['bonus_defense'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['chest']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['chest']['bonus_hp'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['chest']['bonus_str'] > 0): ?><span>💪 +<?= $equipped['chest']['bonus_str'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['chest']['bonus_agi'] > 0): ?><span>🏃 +<?= $equipped['chest']['bonus_agi'] ?></span><?php endif; ?>
-                                </div>
-                            <?php else: ?>
-                                <span class="slot-empty-label">Emplacement libre</span>
-                            <?php endif; ?>
-                        </div>
-                        <?php if ($equipped['chest']): ?>
-                            <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
-                                <input type="hidden" name="slot" value="chest">
-                                <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 6px;" title="Ranger dans le sac">Déséquiper</button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- 3. PIEDS -->
-                    <div class="equipment-slot-card <?= $equipped['boots'] ? 'equipped' : 'empty' ?>">
-                        <div class="slot-icon-badge">🥾</div>
-                        <div class="slot-info">
-                            <span class="slot-title">Bottes / Pieds</span>
-                            <?php if ($equipped['boots']): ?>
-                                <strong class="item-name <?= $equipped['boots']['rarity'] ?>"><?= htmlspecialchars($equipped['boots']['name']) ?></strong>
-                                <div class="item-bonus-tags">
-                                    <?php if ($equipped['boots']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['boots']['bonus_defense'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['boots']['bonus_agi'] > 0): ?><span>🏃 +<?= $equipped['boots']['bonus_agi'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['boots']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['boots']['bonus_hp'] ?></span><?php endif; ?>
-                                </div>
-                            <?php else: ?>
-                                <span class="slot-empty-label">Emplacement libre</span>
-                            <?php endif; ?>
-                        </div>
-                        <?php if ($equipped['boots']): ?>
-                            <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
-                                <input type="hidden" name="slot" value="boots">
-                                <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 6px;" title="Ranger dans le sac">Déséquiper</button>
-                            </form>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- 4. ARME (MAIN DROITE) -->
-                    <div class="equipment-slot-card <?= $equipped['weapon'] ? 'equipped' : 'empty' ?>">
-                        <div class="slot-icon-badge">🗡️</div>
-                        <div class="slot-info">
-                            <span class="slot-title">Arme Principale</span>
+                    <!-- LIGNE 2 : ARME & BOUCLIER / ARMURE -->
+                    <!-- ARME -->
+                    <div class="doll-slot-card <?= $equipped['weapon'] ? 'equipped ' . $equipped['weapon']['rarity'] : 'empty' ?>">
+                        <div class="doll-slot-icon">🗡️</div>
+                        <div class="doll-slot-content">
+                            <span class="doll-slot-label">Arme Principale</span>
                             <?php if ($equipped['weapon']): ?>
-                                <strong class="item-name <?= $equipped['weapon']['rarity'] ?>"><?= htmlspecialchars($equipped['weapon']['name']) ?></strong>
-                                <div class="item-bonus-tags">
+                                <strong class="doll-item-name <?= $equipped['weapon']['rarity'] ?>"><?= htmlspecialchars($equipped['weapon']['name']) ?></strong>
+                                <div class="doll-item-stats">
                                     <?php if ($equipped['weapon']['bonus_attack'] > 0): ?><span>⚔️ +<?= $equipped['weapon']['bonus_attack'] ?> Atk</span><?php endif; ?>
                                     <?php if ($equipped['weapon']['bonus_str'] > 0): ?><span>💪 +<?= $equipped['weapon']['bonus_str'] ?></span><?php endif; ?>
                                     <?php if ($equipped['weapon']['bonus_agi'] > 0): ?><span>🏃 +<?= $equipped['weapon']['bonus_agi'] ?></span><?php endif; ?>
                                     <?php if ($equipped['weapon']['bonus_int'] > 0): ?><span>🔮 +<?= $equipped['weapon']['bonus_int'] ?></span><?php endif; ?>
                                 </div>
                             <?php else: ?>
-                                <span class="slot-empty-label">Mains nues</span>
+                                <span class="doll-empty-text">Mains nues</span>
                             <?php endif; ?>
                         </div>
                         <?php if ($equipped['weapon']): ?>
                             <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
                                 <input type="hidden" name="slot" value="weapon">
-                                <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 6px;" title="Ranger dans le sac">Déséquiper</button>
+                                <button type="submit" class="btn-retro btn-unequip" title="Déséquiper">✕</button>
                             </form>
                         <?php endif; ?>
                     </div>
 
-                    <!-- 5. BOUCLIER / MAIN GAUCHE -->
-                    <div class="equipment-slot-card <?= $equipped['shield'] ? 'equipped' : 'empty' ?>">
-                        <div class="slot-icon-badge">🛡️</div>
-                        <div class="slot-info">
-                            <span class="slot-title">Bouclier / Main Gauche</span>
+                    <!-- BOUCLIER -->
+                    <div class="doll-slot-card <?= $equipped['shield'] ? 'equipped' : 'empty' ?>">
+                        <div class="doll-slot-icon">🛡️</div>
+                        <div class="doll-slot-content">
+                            <span class="doll-slot-label">Bouclier / Main Gauche</span>
                             <?php if ($equipped['shield']): ?>
-                                <strong class="item-name <?= $equipped['shield']['rarity'] ?>"><?= htmlspecialchars($equipped['shield']['name']) ?></strong>
-                                <div class="item-bonus-tags">
-                                    <?php if ($equipped['shield']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['shield']['bonus_defense'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['shield']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['shield']['bonus_hp'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['shield']['bonus_str'] > 0): ?><span>💪 +<?= $equipped['shield']['bonus_str'] ?></span><?php endif; ?>
+                                <strong class="doll-item-name <?= $equipped['shield']['rarity'] ?>"><?= htmlspecialchars($equipped['shield']['name']) ?></strong>
+                                <div class="doll-item-stats">
+                                    <?php if ($equipped['shield']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['shield']['bonus_defense'] ?> Def</span><?php endif; ?>
+                                    <?php if ($equipped['shield']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['shield']['bonus_hp'] ?> PV</span><?php endif; ?>
                                 </div>
                             <?php else: ?>
-                                <span class="slot-empty-label">Emplacement libre</span>
+                                <span class="doll-empty-text">Emplacement libre</span>
                             <?php endif; ?>
                         </div>
                         <?php if ($equipped['shield']): ?>
                             <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
                                 <input type="hidden" name="slot" value="shield">
-                                <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 6px;" title="Ranger dans le sac">Déséquiper</button>
+                                <button type="submit" class="btn-retro btn-unequip" title="Déséquiper">✕</button>
                             </form>
                         <?php endif; ?>
                     </div>
 
-                    <!-- 6. BIJOU / ANNEAU -->
-                    <div class="equipment-slot-card <?= $equipped['ring'] ? 'equipped' : 'empty' ?>">
-                        <div class="slot-icon-badge">💍</div>
-                        <div class="slot-info">
-                            <span class="slot-title">Bijou / Anneau</span>
-                            <?php if ($equipped['ring']): ?>
-                                <strong class="item-name <?= $equipped['ring']['rarity'] ?>"><?= htmlspecialchars($equipped['ring']['name']) ?></strong>
-                                <div class="item-bonus-tags">
-                                    <?php if ($equipped['ring']['bonus_attack'] > 0): ?><span>⚔️ +<?= $equipped['ring']['bonus_attack'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['ring']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['ring']['bonus_defense'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['ring']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['ring']['bonus_hp'] ?></span><?php endif; ?>
-                                    <?php if ($equipped['ring']['bonus_int'] > 0): ?><span>🔮 +<?= $equipped['ring']['bonus_int'] ?></span><?php endif; ?>
+                    <!-- LIGNE 3 : ARMURE & BIJOU -->
+                    <!-- ARMURE -->
+                    <div class="doll-slot-card <?= $equipped['chest'] ? 'equipped ' . $equipped['chest']['rarity'] : 'empty' ?>">
+                        <div class="doll-slot-icon">🥋</div>
+                        <div class="doll-slot-content">
+                            <span class="doll-slot-label">Armure / Torse</span>
+                            <?php if ($equipped['chest']): ?>
+                                <strong class="doll-item-name <?= $equipped['chest']['rarity'] ?>"><?= htmlspecialchars($equipped['chest']['name']) ?></strong>
+                                <div class="doll-item-stats">
+                                    <?php if ($equipped['chest']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['chest']['bonus_defense'] ?> Def</span><?php endif; ?>
+                                    <?php if ($equipped['chest']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['chest']['bonus_hp'] ?> PV</span><?php endif; ?>
+                                    <?php if ($equipped['chest']['bonus_str'] > 0): ?><span>💪 +<?= $equipped['chest']['bonus_str'] ?></span><?php endif; ?>
                                 </div>
                             <?php else: ?>
-                                <span class="slot-empty-label">Emplacement libre</span>
+                                <span class="doll-empty-text">Emplacement libre</span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($equipped['chest']): ?>
+                            <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
+                                <input type="hidden" name="slot" value="chest">
+                                <button type="submit" class="btn-retro btn-unequip" title="Déséquiper">✕</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- BIJOU -->
+                    <div class="doll-slot-card <?= $equipped['ring'] ? 'equipped ' . $equipped['ring']['rarity'] : 'empty' ?>">
+                        <div class="doll-slot-icon">💍</div>
+                        <div class="doll-slot-content">
+                            <span class="doll-slot-label">Bijou / Anneau</span>
+                            <?php if ($equipped['ring']): ?>
+                                <strong class="doll-item-name <?= $equipped['ring']['rarity'] ?>"><?= htmlspecialchars($equipped['ring']['name']) ?></strong>
+                                <div class="doll-item-stats">
+                                    <?php if ($equipped['ring']['bonus_attack'] > 0): ?><span>⚔️ +<?= $equipped['ring']['bonus_attack'] ?> Atk</span><?php endif; ?>
+                                    <?php if ($equipped['ring']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['ring']['bonus_defense'] ?> Def</span><?php endif; ?>
+                                    <?php if ($equipped['ring']['bonus_hp'] > 0): ?><span>❤️ +<?= $equipped['ring']['bonus_hp'] ?> PV</span><?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="doll-empty-text">Emplacement libre</span>
                             <?php endif; ?>
                         </div>
                         <?php if ($equipped['ring']): ?>
                             <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
                                 <input type="hidden" name="slot" value="ring">
-                                <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 6px;" title="Ranger dans le sac">Déséquiper</button>
+                                <button type="submit" class="btn-retro btn-unequip" title="Déséquiper">✕</button>
                             </form>
                         <?php endif; ?>
                     </div>
+
+                    <!-- LIGNE 4 : BOTTES (CENTRÉ) -->
+                    <div class="paperdoll-row" style="grid-column: 1 / span 2; justify-content: center;">
+                        <div class="doll-slot-card <?= $equipped['boots'] ? 'equipped ' . $equipped['boots']['rarity'] : 'empty' ?>" style="width: 220px;">
+                            <div class="doll-slot-icon">🥾</div>
+                            <div class="doll-slot-content">
+                                <span class="doll-slot-label">Bottes / Pieds</span>
+                                <?php if ($equipped['boots']): ?>
+                                    <strong class="doll-item-name <?= $equipped['boots']['rarity'] ?>"><?= htmlspecialchars($equipped['boots']['name']) ?></strong>
+                                    <div class="doll-item-stats">
+                                        <?php if ($equipped['boots']['bonus_defense'] > 0): ?><span>🛡️ +<?= $equipped['boots']['bonus_defense'] ?> Def</span><?php endif; ?>
+                                        <?php if ($equipped['boots']['bonus_agi'] > 0): ?><span>🏃 +<?= $equipped['boots']['bonus_agi'] ?></span><?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="doll-empty-text">Emplacement libre</span>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($equipped['boots']): ?>
+                                <form hx-post="/inventory/unequip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
+                                    <input type="hidden" name="slot" value="boots">
+                                    <button type="submit" class="btn-retro btn-unequip" title="Déséquiper">✕</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Récapitulatif des bonus de panoplie -->
-                <div style="background: #110e17; border: 1px solid #3d324f; border-radius: 6px; padding: 12px; margin-top: 15px; font-size: 0.88rem;">
-                    <div style="color: var(--accent-gold); font-weight: bold; margin-bottom: 6px;">✨ Cumul des Bonus d'Équipement :</div>
-                    <div style="display:flex; flex-wrap:wrap; gap: 12px; color: var(--text-primary);">
-                        <span>⚔️ Attaque : <strong>+<?= $bonuses['bonus_attack'] ?></strong></span>
-                        <span>🛡️ Défense : <strong>+<?= $bonuses['bonus_defense'] ?></strong></span>
-                        <span>💪 Force : <strong>+<?= $bonuses['bonus_str'] ?></strong></span>
-                        <span>🏃 Agi : <strong>+<?= $bonuses['bonus_agi'] ?></strong></span>
-                        <span>🔮 Int : <strong>+<?= $bonuses['bonus_int'] ?></strong></span>
-                        <span>❤️ PV : <strong>+<?= $bonuses['bonus_hp'] ?></strong></span>
+                <!-- CUMUL DES BONUS -->
+                <div class="equipment-bonus-summary">
+                    <div style="color: var(--accent-gold); font-weight: bold; margin-bottom: 6px; font-size: 0.9rem;">
+                        ✨ Total des Bonus d'Équipement :
+                    </div>
+                    <div class="bonus-tags-list">
+                        <span class="bonus-tag">⚔️ Attaque : <strong>+<?= $bonuses['bonus_attack'] ?></strong></span>
+                        <span class="bonus-tag">🛡️ Défense : <strong>+<?= $bonuses['bonus_defense'] ?></strong></span>
+                        <span class="bonus-tag">💪 Force : <strong>+<?= $bonuses['bonus_str'] ?></strong></span>
+                        <span class="bonus-tag">🏃 Agilité : <strong>+<?= $bonuses['bonus_agi'] ?></strong></span>
+                        <span class="bonus-tag">🔮 Intelligence : <strong>+<?= $bonuses['bonus_int'] ?></strong></span>
+                        <span class="bonus-tag">❤️ PV Max : <strong>+<?= $bonuses['bonus_hp'] ?></strong></span>
                     </div>
                 </div>
             </div>
 
-            <!-- COLONNE DROITE : LE SAC À DOS (GRILLE D'ITEMS ÉVOLUTIVE) -->
-            <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-                    <h3 style="color: var(--accent-gold); font-size: 1.15rem;">
-                        🎒 Sac à Dos <span style="font-size:0.9rem; color: var(--text-muted);">(<?= count($bagItems) ?> / <?= $character['inventory_slots'] ?> emplacements)</span>
-                    </h3>
+            <!-- PANNEAU DROIT : GRILLE DU SAC À DOS ÉVOLUTIF -->
+            <div class="bag-panel">
+                <div class="panel-header-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🎒 Sac à Dos</span>
+                    <span class="bag-capacity-pill">
+                        <strong><?= count($bagItems) ?></strong> / <?= $character['inventory_slots'] ?> emplacements
+                    </span>
                 </div>
 
-                <div class="bag-items-list">
-                    <?php if (empty($bagItems)): ?>
-                        <div style="text-align:center; padding: 30px 15px; color: var(--text-muted); background: #130f1c; border: 1px dashed #3d324f; border-radius: 6px;">
-                            Votre sac est vide pour le moment.<br>
-                            <small>Explorez la Forêt Sombre pour piller des trésors sur les monstres !</small>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($bagItems as $item): ?>
-                            <?php $canEquip = ((int)$character['level'] >= (int)$item['level_required']); ?>
-                            <div class="bag-item-card <?= $item['rarity'] ?>" style="<?= !$canEquip && $item['type'] !== 'consumable' ? 'opacity: 0.85;' : '' ?>">
-                                <div class="item-icon-box"><?= $item['icon'] ?></div>
-                                <div style="flex:1;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: 4px;">
-                                        <strong class="item-name <?= $item['rarity'] ?>"><?= htmlspecialchars($item['name']) ?></strong>
-                                        
-                                        <div style="display:flex; gap: 6px; align-items:center;">
-                                            <?php if ($item['level_required'] > 1): ?>
-                                                <?php if ($canEquip): ?>
-                                                    <span style="font-size:0.75rem; background: #143522; color: #2ecc71; border: 1px solid #27ae60; padding: 1px 6px; border-radius: 3px;">
-                                                        Niv. <?= $item['level_required'] ?>
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span style="font-size:0.75rem; background: #3d1414; color: #e74c3c; border: 1px solid #c0392b; padding: 1px 6px; border-radius: 3px; font-weight:bold;">
-                                                        🔒 Niv. <?= $item['level_required'] ?> requis
-                                                    </span>
-                                                <?php endif; ?>
-                                            <?php endif; ?>
+                <!-- GRILLE DE SLOTS -->
+                <div class="bag-grid-layout">
+                    <!-- 1. OBJETS POSSÉDÉS -->
+                    <?php foreach ($bagItems as $item): ?>
+                        <?php $canEquip = ((int)$character['level'] >= (int)$item['level_required']); ?>
+                        <div class="bag-slot-tile occupied <?= $item['rarity'] ?>">
+                            
+                            <!-- Header de l'objet (Icône + Rareté + Badge Qty) -->
+                            <div class="tile-icon-wrapper">
+                                <span class="tile-icon"><?= $item['icon'] ?></span>
+                                <?php if ($item['quantity'] > 1): ?>
+                                    <span class="tile-qty-badge">x<?= $item['quantity'] ?></span>
+                                <?php endif; ?>
+                            </div>
 
-                                            <?php if ($item['quantity'] > 1): ?>
-                                                <span class="badge-qty">x<?= $item['quantity'] ?></span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-
-                                    <p style="font-size:0.82rem; color: var(--text-muted); margin: 3px 0;"><?= htmlspecialchars($item['description']) ?></p>
-                                    
-                                    <div class="item-bonus-tags">
-                                        <?php if ($item['bonus_attack'] > 0): ?><span>⚔️ +<?= $item['bonus_attack'] ?> Atk</span><?php endif; ?>
-                                        <?php if ($item['bonus_defense'] > 0): ?><span>🛡️ +<?= $item['bonus_defense'] ?> Def</span><?php endif; ?>
-                                        <?php if ($item['bonus_str'] > 0): ?><span>💪 +<?= $item['bonus_str'] ?></span><?php endif; ?>
-                                        <?php if ($item['bonus_agi'] > 0): ?><span>🏃 +<?= $item['bonus_agi'] ?></span><?php endif; ?>
-                                        <?php if ($item['bonus_int'] > 0): ?><span>🔮 +<?= $item['bonus_int'] ?></span><?php endif; ?>
-                                        <?php if ($item['heal_hp'] > 0): ?><span>❤️ Soin +<?= $item['heal_hp'] ?> PV</span><?php endif; ?>
-                                        <?php if ($item['restore_ap'] > 0): ?><span>⚡ Recharge +<?= $item['restore_ap'] ?> PA</span><?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <div class="item-actions-stack">
-                                    <?php if ($item['type'] === 'consumable'): ?>
-                                        <form hx-post="/inventory/use" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
-                                            <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
-                                            <button type="submit" class="btn-retro btn-primary" style="font-size:0.8rem; padding: 4px 10px; width: 100%;">
-                                                Consommer 🧪
-                                            </button>
-                                        </form>
+                            <!-- Nom & Type -->
+                            <div class="tile-info">
+                                <strong class="tile-item-name <?= $item['rarity'] ?>">
+                                    <?= htmlspecialchars($item['name']) ?>
+                                </strong>
+                                
+                                <!-- Niveau requis si > 1 -->
+                                <?php if ($item['level_required'] > 1): ?>
+                                    <?php if ($canEquip): ?>
+                                        <div class="tile-level-badge met">Niv. <?= $item['level_required'] ?></div>
                                     <?php else: ?>
-                                        <form hx-post="/inventory/equip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
-                                            <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
-                                            <?php if ($canEquip): ?>
-                                                <button type="submit" class="btn-retro btn-stat-plus" style="font-size:0.8rem; padding: 4px 10px; width: 100%;">
-                                                    Équiper 🛡️
-                                                </button>
-                                            <?php else: ?>
-                                                <button type="button" disabled class="btn-retro" style="font-size:0.75rem; padding: 4px 8px; width: 100%; opacity: 0.5; cursor: not-allowed; border-color: #555;">
-                                                    🔒 Niv. <?= $item['level_required'] ?>
-                                                </button>
-                                            <?php endif; ?>
-                                        </form>
+                                        <div class="tile-level-badge locked">🔒 Requis Niv. <?= $item['level_required'] ?></div>
                                     <?php endif; ?>
+                                <?php endif; ?>
 
-                                    <form hx-post="/inventory/sell" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
-                                        <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
-                                        <button type="submit" class="btn-retro" style="font-size:0.75rem; padding: 3px 8px; width: 100%;" onclick="return confirm('Vendre pour <?= $item['sell_price'] * $item['quantity'] ?> or ?');">
-                                            Vendre (<?= $item['sell_price'] * $item['quantity'] ?> 💰)
-                                        </button>
-                                    </form>
+                                <!-- Statistiques clés -->
+                                <div class="tile-stats-box">
+                                    <?php if ($item['bonus_attack'] > 0): ?><span>⚔️ +<?= $item['bonus_attack'] ?> Atk</span><?php endif; ?>
+                                    <?php if ($item['bonus_defense'] > 0): ?><span>🛡️ +<?= $item['bonus_defense'] ?> Def</span><?php endif; ?>
+                                    <?php if ($item['bonus_str'] > 0): ?><span>💪 +<?= $item['bonus_str'] ?></span><?php endif; ?>
+                                    <?php if ($item['bonus_agi'] > 0): ?><span>🏃 +<?= $item['bonus_agi'] ?></span><?php endif; ?>
+                                    <?php if ($item['bonus_int'] > 0): ?><span>🔮 +<?= $item['bonus_int'] ?></span><?php endif; ?>
+                                    <?php if ($item['heal_hp'] > 0): ?><span>❤️ +<?= $item['heal_hp'] ?> PV</span><?php endif; ?>
+                                    <?php if ($item['restore_ap'] > 0): ?><span>⚡ +<?= $item['restore_ap'] ?> PA</span><?php endif; ?>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+
+                            <!-- Boutons d'Action -->
+                            <div class="tile-actions-row">
+                                <?php if ($item['type'] === 'consumable'): ?>
+                                    <form hx-post="/inventory/use" hx-target="#inventory-container" hx-swap="outerHTML" style="flex:1; margin:0;">
+                                        <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
+                                        <button type="submit" class="btn-retro btn-primary btn-tile-action">
+                                            Utiliser 🧪
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <form hx-post="/inventory/equip" hx-target="#inventory-container" hx-swap="outerHTML" style="flex:1; margin:0;">
+                                        <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
+                                        <?php if ($canEquip): ?>
+                                            <button type="submit" class="btn-retro btn-stat-plus btn-tile-action">
+                                                Équiper 🛡️
+                                            </button>
+                                        <?php else: ?>
+                                            <button type="button" disabled class="btn-retro btn-tile-action btn-disabled">
+                                                🔒 Niv. <?= $item['level_required'] ?>
+                                            </button>
+                                        <?php endif; ?>
+                                    </form>
+                                <?php endif; ?>
+
+                                <form hx-post="/inventory/sell" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
+                                    <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
+                                    <button type="submit" class="btn-retro btn-sell-action" title="Vendre cet objet pour <?= $item['sell_price'] * $item['quantity'] ?> pièces d'or" onclick="return confirm('Vendre <?= htmlspecialchars($item['name']) ?> pour <?= $item['sell_price'] * $item['quantity'] ?> or ?');">
+                                        💰 <?= $item['sell_price'] * $item['quantity'] ?>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <!-- 2. SLOTS LIBRES DÉBLOQUÉS -->
+                    <?php 
+                    $emptySlotsCount = max(0, (int)$character['inventory_slots'] - count($bagItems));
+                    for ($i = 0; $i < $emptySlotsCount; $i++): 
+                    ?>
+                        <div class="bag-slot-tile empty-unlocked">
+                            <span class="empty-slot-plus">+</span>
+                            <span class="empty-slot-text">Libre</span>
+                        </div>
+                    <?php endfor; ?>
+
+                    <!-- 3. SLOTS VERROUILLÉS (PROCHAINES MONTÉES DE NIVEAU) -->
+                    <?php for ($lvl = (int)$character['level'] + 1; $lvl <= min(20, (int)$character['level'] + 3); $lvl++): ?>
+                        <div class="bag-slot-tile slot-locked">
+                            <span class="lock-icon">🔒</span>
+                            <span class="lock-text">Niveau <?= $lvl ?></span>
+                        </div>
+                    <?php endfor; ?>
                 </div>
 
-                <!-- Slots déblocables visualisés -->
-                <div style="margin-top: 15px; padding: 10px; background: #130f1c; border-radius: 4px; border: 1px solid #2d233c; font-size: 0.85rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                    <span>🔒 <em>Prochain emplacement de sac débloqué au niveau <?= $character['level'] + 1 ?> !</em></span>
-                    <a href="/battle/explore" class="btn-retro btn-primary" style="font-size:0.8rem; padding: 4px 10px;">Partir looter 🌲</a>
+                <!-- BANDEAU D'AIDE ET D'EXPLORATION -->
+                <div class="bag-footer-banner">
+                    <div style="font-size:0.85rem; color: var(--text-muted);">
+                        💡 <em>Chaque passage de niveau débloque automatiquement de nouveaux emplacements de sac.</em>
+                    </div>
+                    <a href="/battle/explore" class="btn-retro btn-primary" style="font-size:0.85rem; padding: 6px 14px;">
+                        Partir chasser du butin 🌲
+                    </a>
                 </div>
             </div>
+
         </div>
 
-        <div style="text-align: center; margin-top: 25px;">
-            <a href="/game/hub" class="btn-retro">🏰 Revenir au Hub de la Ville</a>
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/game/hub" class="btn-retro" style="font-size: 1.05rem; padding: 8px 24px;">
+                🏰 Retourner à la Ville
+            </a>
         </div>
     </div>
 </div>

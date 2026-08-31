@@ -13,15 +13,15 @@ echo "✅ Compte & Héros créés"
 
 echo "=== 2. Affichage de l'Inventaire ==="
 INV_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/inventory")
-echo "$INV_HTML" | grep -q "Sac & Équipement" && echo "✅ Page d'inventaire accessible"
-echo "$INV_HTML" | grep -q "Équipement Actif" && echo "✅ Mannequin d'équipement présent"
+echo "$INV_HTML" | grep -q "Inventaire & Équipements" && echo "✅ Page d'inventaire accessible"
+echo "$INV_HTML" | grep -q "Mannequin d'Équipement" && echo "✅ Mannequin d'équipement présent"
 echo "$INV_HTML" | grep -q "Épée longue en fer" && echo "✅ Épée de départ équipée"
 
 echo "=== 3. Utilisation d'une Potion via HTMX ==="
 POTION_ITEM_ID=$(echo "$INV_HTML" | grep -o 'value="[0-9]*"' | head -n 1 | grep -o '[0-9]*')
 if [ -n "$POTION_ITEM_ID" ]; then
     USE_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "character_item_id=$POTION_ITEM_ID" "http://localhost:8000/inventory/use")
-    echo "$USE_HTML" | grep -q "Sac & Équipement" && echo "✅ Potion consommée via HTMX avec rafraîchissement instantané"
+    echo "$USE_HTML" | grep -q "Inventaire & Équipements" && echo "✅ Potion consommée via HTMX avec rafraîchissement instantané"
 fi
 
 echo "=== 4. Déséquipement d'Arme via HTMX ==="

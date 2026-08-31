@@ -74,7 +74,7 @@ body {
     background: rgba(197, 155, 39, 0.15);
 }
 
-/* Quick Status Header (Perso connecté) */
+/* Quick Status Header */
 .hero-status-strip {
     background: #181420;
     border-bottom: 1px solid #382e4a;
@@ -95,7 +95,7 @@ body {
 /* Main Container */
 .main-wrapper {
     flex: 1;
-    max-width: 1050px;
+    max-width: 1240px;
     width: 100%;
     margin: 25px auto;
     padding: 0 15px;
@@ -227,34 +227,6 @@ body {
     box-shadow: 0 0 8px rgba(241, 196, 15, 0.6);
 }
 
-/* Form Styles */
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--accent-gold);
-}
-
-.form-input {
-    width: 100%;
-    padding: 10px 14px;
-    background: #110e17;
-    border: 1px solid #5a4b6e;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 1rem;
-    font-family: inherit;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--border-gold);
-    box-shadow: 0 0 8px rgba(197, 155, 39, 0.4);
-}
-
 /* Flash Messages */
 .flash-messages {
     margin-bottom: 20px;
@@ -292,122 +264,381 @@ body {
     color: #abd5f3;
 }
 
-/* Mannequin d'Équipement (6 Slots) */
-.equipment-mannequin-grid {
-    display: flex;
-    flex-direction: column;
+/* Raretés d'objets */
+.common { color: var(--rarity-common); }
+.rare { color: var(--rarity-rare); text-shadow: 0 0 6px rgba(93, 173, 226, 0.4); }
+.epic { color: var(--rarity-epic); text-shadow: 0 0 6px rgba(175, 122, 197, 0.4); }
+.legendary { color: var(--rarity-legendary); text-shadow: 0 0 8px rgba(243, 156, 18, 0.6); }
+
+/* ==========================================================================
+   NOUVEAU LAYOUT INVENTAIRE & MANNEQUIN D'ÉQUIPEMENT (SPACIEUX & MODERNE)
+   ========================================================================== */
+
+.inventory-main-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 950px) {
+    .inventory-main-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.panel-header-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    color: var(--accent-gold);
+    margin-bottom: 15px;
+    border-bottom: 1px solid #3d324f;
+    padding-bottom: 8px;
+}
+
+/* Mannequin / Paperdoll */
+.mannequin-panel {
+    background: #14101c;
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.paperdoll-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
-.equipment-slot-card {
-    background: #14101c;
+.doll-slot-card {
+    background: #191424;
     border: 1px solid #3d324f;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 8px 10px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    min-height: 58px;
     transition: all 0.2s;
 }
 
-.equipment-slot-card.equipped {
+.doll-slot-card.equipped {
     border-color: var(--border-gold);
-    background: #1c1527;
+    background: #20172e;
 }
 
-.slot-icon-badge {
-    font-size: 2rem;
-    width: 44px;
-    height: 44px;
-    background: #251d33;
+.doll-slot-card.equipped.rare {
+    border-color: var(--rarity-rare);
+    box-shadow: inset 0 0 8px rgba(93, 173, 226, 0.2);
+}
+
+.doll-slot-card.equipped.epic {
+    border-color: var(--rarity-epic);
+    box-shadow: inset 0 0 8px rgba(175, 122, 197, 0.2);
+}
+
+.doll-slot-icon {
+    font-size: 1.6rem;
+    width: 36px;
+    height: 36px;
+    background: #291e3b;
     border: 1px solid #4a3e5c;
-    border-radius: 6px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.slot-info {
+.doll-slot-content {
     flex: 1;
+    min-width: 0;
 }
 
-.slot-title {
+.doll-slot-label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.slot-empty-label {
-    font-size: 0.9rem;
+.doll-item-name {
+    display: block;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.doll-item-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: var(--accent-gold);
+    margin-top: 2px;
+}
+
+.doll-empty-text {
+    font-size: 0.8rem;
     color: #635773;
     font-style: italic;
 }
 
-/* Sac à Dos & Items */
-.bag-items-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 520px;
-    overflow-y: auto;
-    padding-right: 4px;
+.btn-unequip {
+    padding: 2px 7px;
+    font-size: 0.75rem;
+    color: #ff8585;
+    border-color: #8c2a2a;
+    background: #2b1111;
+    border-radius: 3px;
+}
+.btn-unequip:hover {
+    background: #471515;
+    border-color: #ff6b6b;
+    color: #fff;
 }
 
-.bag-item-card {
-    background: #14101c;
-    border: 1px solid #3d324f;
+/* Résumé des bonus */
+.equipment-bonus-summary {
+    background: #100d17;
+    border: 1px solid #362c47;
     border-radius: 6px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    padding: 12px;
+    margin-top: 15px;
 }
 
-.item-icon-box {
-    font-size: 2.2rem;
-    width: 48px;
-    height: 48px;
-    background: #251c33;
-    border: 1px solid #4a3e5c;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.item-name.common { color: var(--rarity-common); }
-.item-name.rare { color: var(--rarity-rare); text-shadow: 0 0 6px rgba(93, 173, 226, 0.4); }
-.item-name.epic { color: var(--rarity-epic); text-shadow: 0 0 6px rgba(175, 122, 197, 0.4); }
-.item-name.legendary { color: var(--rarity-legendary); text-shadow: 0 0 8px rgba(243, 156, 18, 0.6); }
-
-.item-bonus-tags {
+.bonus-tags-list {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 4px;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
+}
+
+.bonus-tag {
+    background: #1c1527;
+    border: 1px solid #3d324f;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--text-primary);
+}
+
+/* Panneau Sac & Grille */
+.bag-panel {
+    background: #14101c;
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.bag-capacity-pill {
+    background: #251c33;
+    border: 1px solid var(--border-gold);
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
     color: var(--accent-gold);
 }
 
-.item-actions-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 100px;
+.bag-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 14px;
+    margin-bottom: 15px;
 }
 
-.badge-qty {
+/* Tuile d'objet dans le Sac */
+.bag-slot-tile {
+    background: #191424;
+    border: 1px solid #3d324f;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 215px;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.bag-slot-tile.occupied:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-gold);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}
+
+.bag-slot-tile.occupied.rare {
+    border-color: #2980b9;
+    background: #131929;
+}
+
+.bag-slot-tile.occupied.epic {
+    border-color: #8e44ad;
+    background: #1f132b;
+}
+
+.bag-slot-tile.occupied.legendary {
+    border-color: #d35400;
+    background: #2b1a10;
+}
+
+.tile-icon-wrapper {
+    position: relative;
+    text-align: center;
+    margin-bottom: 6px;
+    background: #100c17;
+    border-radius: 4px;
+    padding: 6px;
+    border: 1px solid #2d243b;
+}
+
+.tile-icon {
+    font-size: 2.2rem;
+    display: inline-block;
+}
+
+.tile-qty-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
     background: #e67e22;
     color: #fff;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: bold;
-    padding: 2px 6px;
+    padding: 1px 6px;
     border-radius: 10px;
 }
 
-/* Combat Log Arena */
+.tile-item-name {
+    display: block;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+    line-height: 1.25;
+    min-height: 2.3em;
+}
+
+.tile-level-badge {
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-bottom: 6px;
+    display: inline-block;
+}
+.tile-level-badge.met {
+    background: #143522;
+    color: #2ecc71;
+    border: 1px solid #27ae60;
+}
+.tile-level-badge.locked {
+    background: #3d1414;
+    color: #e74c3c;
+    border: 1px solid #c0392b;
+    font-weight: bold;
+}
+
+.tile-stats-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--accent-gold);
+    margin-bottom: 10px;
+    min-height: 34px;
+}
+
+.tile-actions-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: auto;
+}
+
+.btn-tile-action {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    width: 100%;
+}
+
+.btn-sell-action {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    background: #241910;
+    border-color: #73570e;
+    color: var(--accent-gold);
+    white-space: nowrap;
+}
+.btn-sell-action:hover {
+    background: #382618;
+    border-color: #f1c40f;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #555;
+    background: #222;
+}
+
+/* Slots Libres & Verrouillés */
+.bag-slot-tile.empty-unlocked {
+    border: 1px dashed #3d324f;
+    background: rgba(20, 16, 28, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #54446e;
+    min-height: 200px;
+}
+
+.empty-slot-plus {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.empty-slot-text {
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.bag-slot-tile.slot-locked {
+    border: 1px dashed #282033;
+    background: rgba(13, 10, 18, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #453857;
+    min-height: 200px;
+    opacity: 0.7;
+}
+
+.lock-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.lock-text {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.bag-footer-banner {
+    background: #100c17;
+    border: 1px solid #2d233c;
+    border-radius: 6px;
+    padding: 12px 18px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Combat Log & Arena */
 .battle-arena-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -437,26 +668,10 @@ body {
     padding: 6px 0;
     border-bottom: 1px dotted #2b2238;
 }
-
-.combat-log-entry.crit {
-    color: #ffd700;
-    font-weight: bold;
-}
-
-.combat-log-entry.defeat {
-    color: #ff6b6b;
-    font-weight: bold;
-}
-
-.combat-log-entry.victory {
-    color: #2ecc71;
-    font-weight: bold;
-}
-
-.combat-log-entry.loot {
-    color: #f39c12;
-    font-weight: bold;
-}
+.combat-log-entry.crit { color: #ffd700; font-weight: bold; }
+.combat-log-entry.defeat { color: #ff6b6b; font-weight: bold; }
+.combat-log-entry.victory { color: #2ecc71; font-weight: bold; }
+.combat-log-entry.loot { color: #f39c12; font-weight: bold; }
 
 /* Hub Grid */
 .hub-grid {
@@ -502,14 +717,8 @@ body {
     transition: all 0.2s;
 }
 
-.class-card input[type="radio"] {
-    display: none;
-}
-
-.class-card:hover {
-    border-color: var(--border-gold);
-}
-
+.class-card input[type="radio"] { display: none; }
+.class-card:hover { border-color: var(--border-gold); }
 .class-card.selected,
 .class-card:has(input[type="radio"]:checked) {
     border-color: var(--accent-gold);
