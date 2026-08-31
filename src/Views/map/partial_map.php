@@ -1,33 +1,37 @@
-<?php \Core\View::partial('partials/hero_strip', ['character' => $character, 'oob' => true]); ?>
-<div id="map-container" class="retro-box">
+<?php if (isset($_SERVER['HTTP_HX_REQUEST'])): ?>
+    <?php \Core\View::partial('partials/hero_strip', ['character' => $character, 'oob' => true]); ?>
+<?php endif; ?>
+
+<div id="map-container" class="retro-box" style="margin-bottom: 30px;">
     <div class="retro-box-header">
         <div style="display:flex; align-items:center; gap: 12px;">
             <span>🗺️ <?= htmlspecialchars($zone['name'] ?? 'Carte du Monde') ?></span>
             <span style="font-size:0.9rem; color: var(--text-muted); font-family:sans-serif;">
-                Coordonnées : <strong>[ X: <?= (int)$character['pos_x'] ?> | Y: <?= (int)$character['pos_y'] ?> ]</strong>
+                — Position : <strong>[ X: <?= (int)$character['pos_x'] ?> | Y: <?= (int)$character['pos_y'] ?> ]</strong>
             </span>
         </div>
-        <div style="font-size:0.95rem; color: var(--accent-gold);">
-            ⚡ Points d'Action : <strong><?= (int)$character['current_ap'] ?>/<?= (int)$character['effective_max_ap'] ?></strong>
+        <div style="font-size:0.95rem; color: var(--accent-gold); display:flex; gap: 15px; align-items:center;">
+            <span>⚡ PA : <strong><?= (int)$character['current_ap'] ?>/<?= (int)$character['effective_max_ap'] ?></strong></span>
+            <span>💰 <strong><?= (int)$character['gold'] ?></strong> pièces</span>
         </div>
     </div>
 
     <div class="retro-box-body" style="padding: 25px;">
-        <div class="map-view-layout">
+        <div class="tactical-map-layout">
             
-            <!-- COLONNE GAUCHE : LA GRILLE INTERACTIVE (5x5) -->
-            <div class="map-grid-column">
-                <div class="panel-header-title">
-                    <span>🧭 Carte Régionale (5x5)</span>
+            <!-- PANNEAU GAUCHE : LE PLATEAU DE JEU 2D (5x5) -->
+            <div class="map-board-panel">
+                <div class="panel-header-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🧭 Plateau d'Exploration</span>
+                    <span style="font-size:0.8rem; color:var(--text-muted); font-family:sans-serif;">1 PA / déplacement</span>
                 </div>
 
-                <!-- Grille 5x5 -->
-                <div class="world-map-grid-matrix">
+                <!-- GRILLE TACTIQUE 5x5 -->
+                <div class="rpg-tactical-grid">
                     <?php 
                     $curX = (int)$character['pos_x'];
                     $curY = (int)$character['pos_y'];
                     
-                    // Organiser les tuiles par [y][x]
                     $tileMap = [];
                     foreach ($tiles as $t) {
                         $tileMap[(int)$t['y']][(int)$t['x']] = $t;
@@ -42,31 +46,42 @@
                             $dist = abs($x - $curX) + abs($y - $curY);
                             $isAdjacent = ($dist === 1);
                             $isWalkable = (bool)$tile['is_walkable'];
+                            $typeClass = 'tile-theme-' . htmlspecialchars($tile['tile_type']);
                     ?>
-                        <div class="map-tile-cell <?= $isPlayerHere ? 'player-current' : '' ?> <?= $isAdjacent && $isWalkable ? 'adjacent-movable' : '' ?> <?= !$isWalkable ? 'obstacle-cell' : '' ?>"
-                             title="<?= htmlspecialchars($tile['name']) ?> (<?= $tile['is_walkable'] ? 'Coût: ' . $tile['ap_cost'] . ' PA' : 'Infranchissable' ?>)">
+                        <div class="tactical-cell <?= $typeClass ?> <?= $isPlayerHere ? 'is-hero-position' : '' ?> <?= $isAdjacent && $isWalkable ? 'is-reachable-step' : '' ?> <?= !$isWalkable ? 'is-obstacle-wall' : '' ?>">
                             
                             <?php if ($isAdjacent && $isWalkable): ?>
-                                <!-- Clic direct pour se déplacer sur case adjacente -->
-                                <form hx-post="/map/move-to" hx-target="#map-container" hx-swap="outerHTML" style="margin:0; width:100%; height:100%;">
+                                <!-- Case Adjacente Cliquable -->
+                                <form hx-post="/map/move-to" hx-target="#map-container" hx-swap="outerHTML" class="cell-form-link">
                                     <input type="hidden" name="x" value="<?= $x ?>">
                                     <input type="hidden" name="y" value="<?= $y ?>">
-                                    <button type="submit" class="btn-tile-click-move">
-                                        <span class="cell-icon"><?= $tile['icon'] ?></span>
-                                        <span class="cell-coord"><?= $x ?>,<?= $y ?></span>
+                                    <button type="submit" class="cell-action-btn" title="Marcher vers <?= htmlspecialchars($tile['name']) ?> (1 PA)">
+                                        <span class="cell-terrain-tag"><?= strtoupper($tile['tile_type']) ?></span>
+                                        <span class="cell-main-icon"><?= $tile['icon'] ?></span>
+                                        <span class="cell-label-text"><?= htmlspecialchars(mb_substr($tile['name'], 0, 10)) ?></span>
+                                        <span class="step-indicator-arrow">✦</span>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <div class="cell-inner-static">
+                                <!-- Case Non-Adjacente ou Actuelle -->
+                                <div class="cell-static-content" title="<?= htmlspecialchars($tile['name']) ?> (<?= $tile['is_walkable'] ? 'Coût: ' . $tile['ap_cost'] . ' PA' : 'Infranchissable' ?>)">
+                                    <span class="cell-terrain-tag"><?= strtoupper($tile['tile_type']) ?></span>
+                                    
                                     <?php if ($isPlayerHere): ?>
-                                        <div class="player-avatar-pin">
-                                            <span class="hero-pin-icon"><?= $character['class_icon'] ?></span>
+                                        <div class="hero-token-disc">
+                                            <span class="hero-token-avatar"><?= $character['class_icon'] ?></span>
+                                            <span class="hero-token-pulse"></span>
                                         </div>
+                                    <?php else: ?>
+                                        <span class="cell-main-icon"><?= $tile['icon'] ?></span>
                                     <?php endif; ?>
-                                    <span class="cell-icon"><?= $tile['icon'] ?></span>
-                                    <span class="cell-coord"><?= $x ?>,<?= $y ?></span>
+
+                                    <span class="cell-label-text <?= $isPlayerHere ? 'hero-here-label' : '' ?>">
+                                        <?= $isPlayerHere ? '★ VOUS ★' : htmlspecialchars(mb_substr($tile['name'], 0, 10)) ?>
+                                    </span>
                                 </div>
                             <?php endif; ?>
+
                         </div>
                     <?php 
                         endfor;
@@ -74,116 +89,139 @@
                     ?>
                 </div>
 
-                <!-- Boussole de navigation / D-Pad -->
-                <div class="map-dpad-container">
-                    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px; text-align:center;">
-                        🧭 Pavé directionnel (1 PA par pas) :
-                    </div>
-                    <div class="dpad-grid">
+                <!-- BOUSSOLE / D-PAD RÉTRO -->
+                <div class="compass-navigator-box">
+                    <div class="compass-grid-dpad">
                         <div></div>
                         <form hx-post="/map/move" hx-target="#map-container" hx-swap="outerHTML">
                             <input type="hidden" name="direction" value="north">
-                            <button type="submit" class="btn-retro dpad-btn" title="Nord" <?= ($adjacent['north'] && $adjacent['north']['is_walkable']) ? '' : 'disabled' ?>>⬆️ Nord</button>
+                            <button type="submit" class="btn-retro dpad-cardinal-btn" title="Marcher vers le Nord" <?= ($adjacent['north'] && $adjacent['north']['is_walkable']) ? '' : 'disabled' ?>>
+                                ⬆️ Nord
+                            </button>
                         </form>
                         <div></div>
 
                         <form hx-post="/map/move" hx-target="#map-container" hx-swap="outerHTML">
                             <input type="hidden" name="direction" value="west">
-                            <button type="submit" class="btn-retro dpad-btn" title="Ouest" <?= ($adjacent['west'] && $adjacent['west']['is_walkable']) ? '' : 'disabled' ?>>⬅️ Ouest</button>
+                            <button type="submit" class="btn-retro dpad-cardinal-btn" title="Marcher vers l'Ouest" <?= ($adjacent['west'] && $adjacent['west']['is_walkable']) ? '' : 'disabled' ?>>
+                                ⬅️ Ouest
+                            </button>
                         </form>
-                        <div class="dpad-center-pin"><?= $character['class_icon'] ?></div>
+                        <div class="compass-core-pin"><?= $character['class_icon'] ?></div>
                         <form hx-post="/map/move" hx-target="#map-container" hx-swap="outerHTML">
                             <input type="hidden" name="direction" value="east">
-                            <button type="submit" class="btn-retro dpad-btn" title="Est" <?= ($adjacent['east'] && $adjacent['east']['is_walkable']) ? '' : 'disabled' ?>>➡️ Est</button>
+                            <button type="submit" class="btn-retro dpad-cardinal-btn" title="Marcher vers l'Est" <?= ($adjacent['east'] && $adjacent['east']['is_walkable']) ? '' : 'disabled' ?>>
+                                ➡️ Est
+                            </button>
                         </form>
 
                         <div></div>
                         <form hx-post="/map/move" hx-target="#map-container" hx-swap="outerHTML">
                             <input type="hidden" name="direction" value="south">
-                            <button type="submit" class="btn-retro dpad-btn" title="Sud" <?= ($adjacent['south'] && $adjacent['south']['is_walkable']) ? '' : 'disabled' ?>>⬇️ Sud</button>
+                            <button type="submit" class="btn-retro dpad-cardinal-btn" title="Marcher vers le Sud" <?= ($adjacent['south'] && $adjacent['south']['is_walkable']) ? '' : 'disabled' ?>>
+                                ⬇️ Sud
+                            </button>
                         </form>
                         <div></div>
                     </div>
                 </div>
+
+                <!-- LÉGENDE DE LA CARTE -->
+                <div class="map-legend-strip">
+                    <span>🏰 Cité</span>
+                    <span>🔨 Forge</span>
+                    <span>🍺 Taverne</span>
+                    <span>🌲 Forêt</span>
+                    <span>🌾 Sentier</span>
+                    <span>🌊 Eau</span>
+                    <span>🏔️ Mont</span>
+                    <span>👹 Boss</span>
+                </div>
             </div>
 
-            <!-- COLONNE DROITE : DÉTAIL DE LA CASE ACTUELLE & ACTIONS -->
-            <div class="tile-detail-column">
+            <!-- PANNEAU DROIT : FICHE DU LIEU ACTUEL & ACTIONS -->
+            <div class="map-story-panel">
                 <div class="panel-header-title">
-                    <span>📍 Lieu Actuel</span>
+                    <span>📜 Carnet de Voyage</span>
                 </div>
 
-                <div class="tile-story-card">
-                    <div class="tile-story-header">
-                        <div class="story-icon-box"><?= $currentTile['icon'] ?></div>
-                        <div>
-                            <h2 style="color: var(--accent-gold); font-size: 1.35rem; margin-bottom: 3px;">
-                                <?= htmlspecialchars($currentTile['name']) ?>
-                            </h2>
-                            <span style="font-size:0.8rem; color: var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">
-                                Type de terrain : <?= htmlspecialchars($currentTile['tile_type']) ?>
-                            </span>
+                <div class="location-story-scroll">
+                    <div class="location-header-row">
+                        <div class="location-emblem-box"><?= $currentTile['icon'] ?></div>
+                        <div style="flex:1;">
+                            <span class="location-subtitle">Lieu Découvert &bull; [ <?= (int)$character['pos_x'] ?>, <?= (int)$character['pos_y'] ?> ]</span>
+                            <h2 class="location-name-title"><?= htmlspecialchars($currentTile['name']) ?></h2>
+                            <span class="location-type-pill"><?= strtoupper($currentTile['tile_type']) ?></span>
                         </div>
                     </div>
 
-                    <p class="tile-story-description">
+                    <div class="location-narrative-text">
                         <?= nl2br(htmlspecialchars($currentTile['description'])) ?>
-                    </p>
+                    </div>
                 </div>
 
-                <!-- ACTIONS CONTEXTUELLES EXCLUSIVES À LA CASE -->
-                <div class="contextual-action-box">
-                    <div style="font-size: 0.95rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 12px;">
-                        ⚡ Actions disponibles sur cette case :
+                <!-- ZONE D'ACTION CONTEXTUELLE -->
+                <div class="location-action-card">
+                    <div class="action-card-title">
+                        <span>⚡ Interaction Spéciale :</span>
                     </div>
 
                     <?php if ($currentTile['action_type'] === 'shop'): ?>
-                        <div class="action-card-highlight">
-                            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
-                                Les flammes de la forge crépitent. Le maître artisan propose des armes tranchantes et des armures blindées.
+                        <div class="action-prompt-block">
+                            <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:12px;">
+                                La forge est ouverte ! Vous pouvez y acheter des armes acérées, des armures solides et des potions revigorantes.
                             </p>
-                            <a href="/game/shop" class="btn-retro btn-stat-plus" style="font-size: 1.05rem; padding: 10px 20px; width: 100%;">
-                                🔨 <?= htmlspecialchars($currentTile['action_label'] ?? 'Ouvrir la Forge') ?>
+                            <a href="/game/shop" class="btn-retro btn-stat-plus btn-action-heroic">
+                                🔨 <?= htmlspecialchars($currentTile['action_label'] ?? 'Entrer dans la Forge') ?>
                             </a>
                         </div>
 
                     <?php elseif ($currentTile['action_type'] === 'tavern'): ?>
-                        <div class="action-card-highlight">
-                            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
-                                Reposez-vous près du feu de cheminée pour restaurer l'intégralité de vos PV et PA.
+                        <div class="action-prompt-block">
+                            <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:12px;">
+                                Installez-vous près du feu de cheminée. Une chope et un lit douillet restaureront 100% de vos PV et PA.
                             </p>
                             <form method="POST" action="/game/tavern/rest" style="margin:0;">
-                                <button type="submit" class="btn-retro btn-primary" style="font-size: 1.05rem; padding: 10px 20px; width: 100%;">
+                                <button type="submit" class="btn-retro btn-primary btn-action-heroic">
                                     🍺 Se Reposer à la Taverne (10 💰)
                                 </button>
                             </form>
                         </div>
 
                     <?php elseif ($currentTile['action_type'] === 'battle_zone'): ?>
-                        <div class="action-card-highlight">
-                            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
-                                Des créatures sauvages et des prédateurs rôdent dans les parages. Êtes-vous prêt au combat ?
+                        <div class="action-prompt-block">
+                            <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:12px;">
+                                Des bruits suspects résonnent dans les taillis. Vous sentez la présence d'ennemis féroces.
                             </p>
-                            <a href="/battle/explore" class="btn-retro btn-primary" style="font-size: 1.05rem; padding: 10px 20px; width: 100%;">
+                            <a href="/battle/explore" class="btn-retro btn-primary btn-action-heroic">
                                 ⚔️ <?= htmlspecialchars($currentTile['action_label'] ?? 'Traquer les monstres') ?>
                             </a>
                         </div>
 
                     <?php else: ?>
-                        <div style="background: #110e17; border: 1px dashed #3d324f; border-radius: 6px; padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-                            🌾 Vous êtes sur une voie de passage dégagée.<br>
-                            <small>Déplacez-vous sur la carte pour explorer d'autres lieux, échoppes ou zones de chasse.</small>
+                        <div class="action-prompt-empty">
+                            🌾 Le passage est tranquille. Vous pouvez vous reposer un instant ou poursuivre votre voyage vers une autre case.
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- Raccourcis utiles -->
-                <div style="display:flex; gap:10px; margin-top: 20px;">
-                    <a href="/game/inventory" class="btn-retro" style="flex:1; font-size:0.9rem;">🎒 Ouvrir le Sac</a>
-                    <a href="/game/stats" class="btn-retro" style="flex:1; font-size:0.9rem;">📜 Fiche Héros</a>
+                <!-- RACCOURCIS RAPIDES -->
+                <div style="display:flex; gap:12px; margin-top:20px;">
+                    <a href="/game/inventory" class="btn-retro" style="flex:1; font-size:0.9rem; padding:8px;">
+                        🎒 Ouvrir le Sac
+                    </a>
+                    <a href="/game/stats" class="btn-retro btn-blue" style="flex:1; font-size:0.9rem; padding:8px;">
+                        📜 Fiche Héros
+                    </a>
                 </div>
             </div>
 
+        </div>
+
+        <div style="text-align:center; margin-top:25px;">
+            <a href="/game/hub" class="btn-retro">
+                🏰 Revenir au Hub de la Ville
+            </a>
         </div>
     </div>
 </div>

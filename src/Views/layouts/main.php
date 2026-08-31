@@ -13,7 +13,7 @@ $flashes = Session::getFlashes();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'RPG-Zero - Le RPG Rétro Web' ?></title>
-    <link rel="stylesheet" href="/css/retro.css">
+    <link rel="stylesheet" href="/css/retro.css?v=<?= file_exists(dirname(__DIR__, 2) . '/public/css/retro.css') ? filemtime(dirname(__DIR__, 2) . '/public/css/retro.css') : time() ?>">
     <script src="/js/htmx.min.js"></script>
 </head>
 <body>
