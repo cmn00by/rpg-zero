@@ -1320,3 +1320,439 @@ body {
     font-size: 0.95rem;
     line-height: 1.5;
 }
+/* ==========================================================================
+   ARÈNE DE DUEL ÉPIQUE (DUEL ARENA LIFTING - ANIME/RETRO STYLE)
+   ========================================================================== */
+
+.duel-arena-frame {
+    border: 2px solid #4f3f69;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    background: #110d19;
+}
+
+.duel-header {
+    background: linear-gradient(90deg, #241935 0%, #161021 100%);
+    border-bottom: 2px solid var(--border-gold);
+}
+
+.duel-swords-icon {
+    font-size: 1.3rem;
+    filter: drop-shadow(0 0 6px rgba(241, 196, 15, 0.8));
+    animation: vsPulse 2s infinite alternate;
+}
+
+/* Face à face : Cartes de combattants */
+.duel-matchup-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(180deg, #161122 0%, #0d0a14 100%);
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 22px 18px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.duel-fighter-card {
+    flex: 1;
+    max-width: 280px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fighter-tag-line {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    margin-bottom: 2px;
+}
+
+.fighter-title-line {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 12px;
+}
+
+.fighter-avatar-box {
+    width: 140px;
+    height: 160px;
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8);
+}
+
+.hero-avatar-glow {
+    border: 2px solid var(--accent-gold);
+    background: radial-gradient(circle, #3d2f14 0%, #171106 100%);
+    box-shadow: 0 0 16px rgba(241, 196, 15, 0.4);
+}
+
+.monster-avatar-glow {
+    border: 2px solid #e74c3c;
+    background: radial-gradient(circle, #381216 0%, #150608 100%);
+    box-shadow: 0 0 16px rgba(231, 76, 60, 0.4);
+}
+
+.fighter-large-icon {
+    font-size: 4.2rem;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+    user-select: none;
+}
+
+.fighter-banner-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.75);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 3px 0;
+    color: var(--accent-gold);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fighter-gear-orbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: center;
+}
+
+.gear-orb {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #251c33;
+    border: 1px solid var(--border-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.gear-orb.monster {
+    border-color: #e74c3c;
+    background: #2a1114;
+    font-size: 0.75rem;
+    color: #ff7675;
+    width: auto;
+    padding: 0 10px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+/* Insigne VS */
+.duel-vs-emblem-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    position: relative;
+}
+
+.vs-crescent-bg {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #3d2f52 0%, #120c1a 100%);
+    border: 2px solid #8d6cb5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 22px rgba(141, 108, 181, 0.6);
+    animation: vsPulse 2s infinite alternate;
+}
+
+@keyframes vsPulse {
+    0% { transform: scale(0.96); box-shadow: 0 0 15px rgba(141, 108, 181, 0.4); }
+    100% { transform: scale(1.04); box-shadow: 0 0 25px rgba(241, 196, 15, 0.7); }
+}
+
+.vs-large-text {
+    font-size: 2rem;
+    font-weight: 900;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    background: linear-gradient(180deg, #ffffff 0%, #f1c40f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+/* Jauge de Choc & PV */
+.duel-clash-gauge-section {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 15px;
+    align-items: center;
+    background: #151020;
+    border: 1px solid #362947;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.clash-side-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.clash-hp-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.clash-impact-badge {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-family: monospace;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.clash-impact-badge.hero-impact {
+    background: #15291b;
+    border: 1px solid #27ae60;
+    color: #2ecc71;
+}
+
+.clash-impact-badge.monster-impact {
+    background: #2b1115;
+    border: 1px solid #c0392b;
+    color: #ff7675;
+}
+
+.clash-round-bubble {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #251c33;
+    border: 2px solid var(--border-gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+}
+
+.round-num-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    line-height: 1;
+}
+
+.round-arrow {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+/* Commandes du Duel */
+.duel-action-dock {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.duel-dock-btn {
+    padding: 10px 8px;
+    font-size: 0.92rem;
+    width: 100%;
+    text-align: center;
+}
+
+.btn-flee {
+    background: #2b1d22;
+    border-color: #7d3345;
+    color: #e74c3c;
+}
+.btn-flee:hover {
+    background: #451b25;
+    border-color: #c0392b;
+}
+
+/* Compte Rendu du Duel (Post-Combat Table) */
+.duel-summary-report-card {
+    background: #14101e;
+    border: 2px solid var(--border-gold);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.25);
+}
+
+.report-header-banner {
+    padding: 12px 18px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 18px;
+    letter-spacing: 0.5px;
+}
+.report-header-banner.victory {
+    background: linear-gradient(90deg, #163820 0%, #0d2113 100%);
+    border: 1px solid #27ae60;
+    color: #2ecc71;
+    box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
+}
+.report-header-banner.defeat {
+    background: linear-gradient(90deg, #3d1419 0%, #1f070a 100%);
+    border: 1px solid #c0392b;
+    color: #e74c3c;
+}
+
+.report-table-title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    letter-spacing: 1px;
+    border-bottom: 1px solid #362947;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+}
+
+.duel-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 700px) {
+    .duel-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.summary-combatant-column {
+    background: #1b1526;
+    border: 1px solid #3d324f;
+    border-radius: 6px;
+    padding: 14px;
+}
+
+.summary-mini-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #2f2540;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.summary-mini-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.summary-mini-avatar.hero {
+    background: #251c33;
+    border: 1px solid var(--border-gold);
+}
+.summary-mini-avatar.monster {
+    background: #2a1114;
+    border: 1px solid #e74c3c;
+}
+
+.trophy-badge {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: bold;
+    background: #3d2f14;
+    color: var(--accent-gold);
+    border: 1px solid var(--border-gold);
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.defeat-badge {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: bold;
+    background: #381216;
+    color: #e74c3c;
+    border: 1px solid #c0392b;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.summary-stat-category {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--accent-gold);
+    margin-top: 10px;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px dotted #332845;
+}
+
+.summary-stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    color: #bbb;
+    padding: 3px 0;
+}
+
+.summary-stat-row.score-row {
+    font-weight: bold;
+    color: #eee;
+    border-top: 1px solid #2f2540;
+    padding-top: 5px;
+    margin-top: 3px;
+}
+
+.summary-stat-row.total-highlight {
+    font-weight: bold;
+    color: #fff;
+}
+
+.summary-levelup-banner {
+    background: linear-gradient(90deg, #3d2f14 0%, #201708 100%);
+    border: 1px solid var(--accent-gold);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 12px;
+    text-align: center;
+    color: var(--accent-gold);
+    font-size: 0.85rem;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+}
+
+.summary-actions-nav {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.duel-log-container {
+    margin-top: 15px;
+}

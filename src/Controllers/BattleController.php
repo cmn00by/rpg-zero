@@ -10,7 +10,7 @@ use Models\Battle;
 class BattleController {
     public function showExplore(): void {
         $charId = Session::getCharacterId();
-        $character = Character::findById($charId);
+        $character = Character::getEffectiveStats($charId);
         $activeBattle = Battle::getActiveBattle($charId);
 
         if ($activeBattle) {
@@ -26,7 +26,7 @@ class BattleController {
 
     public function startBattle(): void {
         $charId = Session::getCharacterId();
-        $character = Character::findById($charId);
+        $character = Character::getEffectiveStats($charId);
         $apCost = 5;
 
         if ($character['current_hp'] <= 0) {
@@ -36,7 +36,7 @@ class BattleController {
         }
 
         if ($character['current_ap'] < $apCost) {
-            Session::setFlash('error', "Points d'Action (PA) insuffisants ({$apCost} PA requis). Attendez qu'ils se rechargent ou allez à la taverne !");
+            Session::setFlash('error', "Points d'Action (PA) insuffisants ({$apCost} PA requis).");
             header('Location: /battle/explore');
             exit;
         }
@@ -57,7 +57,7 @@ class BattleController {
 
     public function showArena(): void {
         $charId = Session::getCharacterId();
-        $character = Character::findById($charId);
+        $character = Character::getEffectiveStats($charId);
         $battle = Battle::getActiveBattle($charId);
 
         if (!$battle) {
@@ -66,12 +66,14 @@ class BattleController {
         }
 
         $logs = Battle::getLogs((int)$battle['id']);
+        $summary = Battle::calculateDuelSummary((int)$battle['id'], $battle, $character, $logs, $battle['winner'], null);
 
         View::render('battle/arena', [
-            'title' => "Combat contre {$battle['monster_name']}",
+            'title' => "⚔️ Duel contre {$battle['monster_name']} - RPG-Zero",
             'character' => $character,
             'battle' => $battle,
-            'logs' => $logs
+            'logs' => $logs,
+            'summary' => $summary
         ]);
     }
 
@@ -91,15 +93,15 @@ class BattleController {
         $action = $_POST['action'] ?? 'attack';
         $result = Battle::processTurn((int)$battle['id'], $action);
 
-        // Si la requête provient d'HTMX, on renvoie uniquement le fragment mis à jour du combat
         if (isset($_SERVER['HTTP_HX_REQUEST'])) {
             View::partial('battle/partial_combat_log', [
                 'battle' => $result['battle'] ?? Battle::getById((int)$battle['id']),
-                'character' => $result['character'] ?? Character::findById($charId),
+                'character' => $result['character'] ?? Character::getEffectiveStats($charId),
                 'logs' => $result['logs'] ?? Battle::getLogs((int)$battle['id']),
                 'is_finished' => $result['is_finished'] ?? false,
                 'winner' => $result['winner'] ?? null,
-                'rewards' => $result['rewards'] ?? null
+                'rewards' => $result['rewards'] ?? null,
+                'summary' => $result['summary'] ?? null
             ]);
             exit;
         }

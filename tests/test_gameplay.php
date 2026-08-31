@@ -1,5 +1,5 @@
 <?php
-// Test E2E de logique de jeu RPG-Zero avec Inventaire, Équipements, Carte & Shop
+// Test E2E de logique de jeu RPG-Zero avec Inventaire, Équipements, Carte, Shop & Duel Arena
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../src/Models/User.php';
 require_once __DIR__ . '/../src/Models/Character.php';
@@ -120,4 +120,30 @@ assert((int)$charAfterHeal['current_hp'] === 135, "HP fully restored to effectiv
 assert((int)$effAfterHeal['effective_max_hp'] === 135, "Effective max HP is 135");
 echo "✅ Soin à la Taverne avec équipement validé : 135/135 PV !\n";
 
-echo "\n✨ TOUS LES TESTS DE CARTE, D'INVENTAIRE, D'ÉQUIPEMENT ET DE COMBAT SONT VALIDÉS !\n";
+echo "=== 8. Test Arène de Duel : Compétences de Classe, Posture & Compte-Rendu ===\n";
+$monster = Monster::getRandomByZone('forest');
+$battleId = Battle::create($charId, (int)$monster['id']);
+assert($battleId > 0, "Battle created");
+
+// 8.1 Posture Défensive
+$defTurn = Battle::processTurn($battleId, 'defend');
+assert(isset($defTurn['summary']), "Duel summary returned");
+
+// 8.2 Compétence Spéciale (Frappe Dévastatrice pour Guerrier)
+$specTurn = Battle::processTurn($battleId, 'special');
+assert(isset($specTurn['summary']), "Special skill turn executed");
+
+// 8.3 Potion de Soin en combat
+$potTurn = Battle::processTurn($battleId, 'potion');
+assert(isset($potTurn['summary']), "Potion in combat executed");
+
+// 8.4 Fin du combat
+while (!$specTurn['is_finished']) {
+    $specTurn = Battle::processTurn($battleId, 'attack');
+}
+assert($specTurn['is_finished'] === true, "Battle finished");
+assert(isset($specTurn['summary']['player_damage_total']), "Total player damage compiled");
+assert(isset($specTurn['summary']['player_score']), "Player score compiled");
+echo "✅ Système d'Arène de Duel validé (Compétences, Postures, Potions et Compte-Rendu) !\n";
+
+echo "\n✨ TOUS LES TESTS DE CARTE, INVENTAIRE, SHOP ET DUEL ARENA SONT VALIDÉS AVEC SUCCÈS !\n";
