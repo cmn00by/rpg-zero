@@ -23,6 +23,8 @@ use Controllers\CharacterController;
 use Controllers\GameController;
 use Controllers\BattleController;
 use Controllers\InventoryController;
+use Controllers\MapController;
+use Controllers\ShopController;
 
 Session::start();
 
@@ -45,6 +47,15 @@ $router->get('/game/hub', [GameController::class, 'showHub'], true, true);
 $router->post('/game/tavern/rest', [GameController::class, 'restAtTavern'], true, true);
 $router->get('/game/stats', [CharacterController::class, 'showStats'], true, true);
 $router->post('/character/allocate-stat', [CharacterController::class, 'allocateStat'], true, true);
+
+// Carte du Monde & Déplacements
+$router->get('/game/map', [MapController::class, 'showMap'], true, true);
+$router->post('/map/move', [MapController::class, 'move'], true, true);
+$router->post('/map/move-to', [MapController::class, 'moveToCoord'], true, true);
+
+// Échoppes & Magasins
+$router->get('/game/shop', [ShopController::class, 'showShop'], true, true);
+$router->post('/shop/buy', [ShopController::class, 'buy'], true, true);
 
 // Inventaire & Équipement
 $router->get('/game/inventory', [InventoryController::class, 'showInventory'], true, true);

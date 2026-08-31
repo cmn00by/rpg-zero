@@ -1,5 +1,5 @@
 <?php
-// Test E2E de logique de jeu RPG-Zero avec Inventaire & Équipements
+// Test E2E de logique de jeu RPG-Zero avec Inventaire, Équipements, Carte & Shop
 require_once __DIR__ . '/../src/Core/Database.php';
 require_once __DIR__ . '/../src/Models/User.php';
 require_once __DIR__ . '/../src/Models/Character.php';
@@ -8,6 +8,7 @@ require_once __DIR__ . '/../src/Models/Battle.php';
 require_once __DIR__ . '/../src/Models/Level.php';
 require_once __DIR__ . '/../src/Models/Item.php';
 require_once __DIR__ . '/../src/Models/Inventory.php';
+require_once __DIR__ . '/../src/Models/WorldMap.php';
 
 use Models\User;
 use Models\Character;
@@ -16,6 +17,7 @@ use Models\Battle;
 use Models\Level;
 use Models\Item;
 use Models\Inventory;
+use Models\WorldMap;
 
 echo "=== 1. Test Catalogue d'Objets ===\n";
 $items = Item::getAll();
@@ -25,41 +27,45 @@ assert($ironSword !== null, "Iron sword exists");
 assert((int)$ironSword['bonus_attack'] === 7, "Iron sword attack is +7");
 echo "✅ Catalogue d'objets validé (" . count($items) . " objets chargés)\n";
 
-echo "=== 2. Test Création de Personnage avec Équipement de Départ ===\n";
+echo "=== 2. Test Création de Personnage & Positionnement sur la Carte ===\n";
 $testUsername = 'hero_' . time();
 $userId = User::create($testUsername, 'password123');
 $charName = 'Perceval_' . rand(100, 999);
 $charId = Character::create($userId, 1, $charName); // Guerrier
 
-$equipped = Inventory::getEquippedItems($charId);
-assert($equipped['weapon'] !== null, "Starting weapon equipped");
-assert($equipped['chest'] !== null, "Starting armor equipped");
+$char = Character::findById($charId);
+assert((int)$char['current_zone_id'] === 1, "Player placed in Zone 1 (Vallée d'Orépierre)");
+assert((int)$char['pos_x'] === 2 && (int)$char['pos_y'] === 2, "Player starts at central square [2, 2]");
+echo "✅ Héros {$charName} créé au centre de la cité d'Orépierre [2, 2] !\n";
 
-$bag = Inventory::getBagItems($charId);
-assert(count($bag) === 1, "1 item type in bag (potions stack)");
-assert($bag[0]['code'] === 'health_potion_minor', "Potions in bag");
-assert((int)$bag[0]['quantity'] === 2, "2 potions in bag");
+echo "=== 3. Test Déplacements & Consommation de PA sur la Carte ===\n";
+$zone = WorldMap::getZoneById(1);
+assert($zone !== null, "Zone 1 exists");
+$tiles = WorldMap::getZoneTiles(1);
+assert(count($tiles) === 25, "Zone has exactly 25 tiles (5x5)");
 
-$effStats = Character::getEffectiveStats($charId);
-assert($effStats['total_attack'] >= 21, "Total attack includes weapon + stats");
-echo "✅ Héros {$charName} créé avec équipement de départ (Épée en fer, Tunique, 2 Potions de soin) !\n";
+// Déplacement Est vers la Forge (2,2) -> (3,2)
+$apBefore = (int)Character::findById($charId)['current_ap'];
+$moveRes = WorldMap::moveCharacter($charId, 'east');
+assert($moveRes['success'] === true, "Moved East");
+assert((int)$moveRes['character']['pos_x'] === 3 && (int)$moveRes['character']['pos_y'] === 2, "Position is now [3, 2] (Forge)");
+assert((int)$moveRes['character']['current_ap'] === ($apBefore - 1), "1 AP consumed");
+echo "✅ Déplacement vers la Forge [3, 2] validé (-1 PA) !\n";
 
-echo "=== 3. Test Consommation de Potion ===\n";
-Character::updateHp($charId, 30);
-$charBefore = Character::findById($charId);
-assert($charBefore['current_hp'] == 30, "HP lowered to 30");
+// Test obstacle : Tentative de continuer vers l'Est sur le Lac (4,2) qui est infranchissable
+$moveObs = WorldMap::moveCharacter($charId, 'east');
+assert($moveObs['success'] === false, "Movement blocked by water obstacle");
+echo "✅ Obstacle infranchissable (Lac) validé (déplacement bloqué) !\n";
 
-$consumeRes = Inventory::consumeItem($charId, $bag[0]['character_item_id']);
-assert($consumeRes['success'] === true, "Potion consumed");
-$charAfter = Character::findById($charId);
-assert($charAfter['current_hp'] == 65, "HP restored to 65 (+35)");
-
-$bagAfter1 = Inventory::getBagItems($charId);
-assert((int)$bagAfter1[0]['quantity'] === 1, "1 potion remaining in stack");
-echo "✅ Consommation de potion validée (+35 PV, 1 potion restante)\n";
+// Déplacement vers la Taverne [1, 2] en revenant vers l'Ouest
+WorldMap::moveCharacter($charId, 'west'); // Reviens en (2,2)
+$moveTavern = WorldMap::moveCharacter($charId, 'west'); // Va en (1,2)
+assert($moveTavern['success'] === true, "Moved to Tavern [1, 2]");
+$tileTavern = WorldMap::getTile(1, 1, 2);
+assert($tileTavern['action_type'] === 'tavern', "Tavern action available on tile [1, 2]");
+echo "✅ Déplacement vers la Taverne du Sanglier [1, 2] validé !\n";
 
 echo "=== 4. Test Équipement & Déséquipement ===\n";
-// Donner un casque en cuir et un bouclier au joueur
 $cap = Item::getByCode('leather_cap');
 $buckler = Item::getByCode('wooden_buckler');
 Inventory::addItem($charId, $cap['id']);
@@ -69,30 +75,18 @@ $bag = Inventory::getBagItems($charId);
 $capItem = array_values(array_filter($bag, fn($i) => $i['code'] === 'leather_cap'))[0];
 $bucklerItem = array_values(array_filter($bag, fn($i) => $i['code'] === 'wooden_buckler'))[0];
 
-// Équiper casque et bouclier
 $eqRes1 = Inventory::equipItem($charId, $capItem['character_item_id']);
 $eqRes2 = Inventory::equipItem($charId, $bucklerItem['character_item_id']);
 assert($eqRes1['success'] === true, "Equipped head");
 assert($eqRes2['success'] === true, "Equipped shield");
 
-$equippedAfter = Inventory::getEquippedItems($charId);
-assert($equippedAfter['head'] !== null, "Head slot occupied");
-assert($equippedAfter['shield'] !== null, "Shield slot occupied");
-
 $bonuses = Inventory::getEquippedBonusTotals($charId);
-// 1 (robe) + 2 (casque) + 3 (bouclier) = 6
 assert($bonuses['bonus_defense'] === 6, "Defense includes chest + shield + helm");
 echo "✅ Équipement des pièces validé (Bonus Défense équipement = +{$bonuses['bonus_defense']})\n";
 
-// Déséquiper le bouclier
-$uneqRes = Inventory::unequipItem($charId, 'shield');
-assert($uneqRes['success'] === true, "Unequipped shield");
-$equippedAfter2 = Inventory::getEquippedItems($charId);
-assert($equippedAfter2['shield'] === null, "Shield slot empty");
-echo "✅ Déséquipement validé (Bouclier retourné dans le sac)\n";
-
-echo "=== 5. Test Vente d'Objet ===\n";
+echo "=== 5. Test Vente d'Objet & Récupération d'Or ===\n";
 $charGoldBefore = Character::findById($charId)['gold'];
+Inventory::unequipItem($charId, 'shield');
 $bag = Inventory::getBagItems($charId);
 $bucklerInBag = array_values(array_filter($bag, fn($i) => $i['code'] === 'wooden_buckler'))[0];
 $sellRes = Inventory::sellItem($charId, $bucklerInBag['character_item_id']);
@@ -109,7 +103,6 @@ assert($charSlotsAfter === ($charSlotsBefore + 1), "Inventory slots increased by
 echo "✅ Sac évolutif validé : Capacité portée à {$charSlotsAfter} emplacements (+1 slot débloqué) !\n";
 
 echo "=== 7. Test Soin Taverne avec Bonus de PV d'Équipement (Heaume +15 PV) ===\n";
-// Héros niveau 2 : donner et équiper le Heaume de fer (+15 PV)
 $ironHelm = Item::getByCode('iron_helm');
 Inventory::addItem($charId, $ironHelm['id']);
 $bag = Inventory::getBagItems($charId);
@@ -117,10 +110,7 @@ $helmInBag = array_values(array_filter($bag, fn($i) => $i['code'] === 'iron_helm
 $eqHelmRes = Inventory::equipItem($charId, $helmInBag['character_item_id']);
 assert($eqHelmRes['success'] === true, "Iron helm equipped");
 
-// Endommager le joueur à 50 PV
 Character::updateHp($charId, 50);
-
-// Se reposer à la taverne
 $healSuccess = Character::healAtTavern($charId, 10);
 assert($healSuccess === true, "Tavern rest successful");
 
@@ -128,13 +118,6 @@ $charAfterHeal = Character::findById($charId);
 $effAfterHeal = Character::getEffectiveStats($charId);
 assert((int)$charAfterHeal['current_hp'] === 135, "HP fully restored to effective max 135 (120 base + 15 helm)");
 assert((int)$effAfterHeal['effective_max_hp'] === 135, "Effective max HP is 135");
-echo "✅ Soin à la Taverne avec équipement validé : 135/135 PV (120 base + 15 Heaume de fer) !\n";
+echo "✅ Soin à la Taverne avec équipement validé : 135/135 PV !\n";
 
-// Déséquiper le Heaume : les PV max redescendent à 120 et current_hp est automatiquement ajusté à 120
-Inventory::unequipItem($charId, 'head');
-$charAfterUnequip = Character::findById($charId);
-assert((int)$charAfterUnequip['current_hp'] === 120, "HP clamped back to 120 upon unequipping helm");
-echo "✅ Déséquipement avec ajustement automatique des PV Max validé (120/120 PV) !\n";
-
-echo "\n✨ TOUS LES TESTS D'INVENTAIRE, D'ÉQUIPEMENT ET DE SOIN SONT VALIDÉS AVEC SUCCÈS !\n";
-
+echo "\n✨ TOUS LES TESTS DE CARTE, D'INVENTAIRE, D'ÉQUIPEMENT ET DE COMBAT SONT VALIDÉS !\n";

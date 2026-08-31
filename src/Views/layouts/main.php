@@ -23,6 +23,7 @@ $flashes = Session::getFlashes();
             <?php if ($userId): ?>
                 <?php if ($activeChar): ?>
                     <a href="/game/hub">🏰 Ville</a>
+                    <a href="/game/map">🗺️ Carte</a>
                     <a href="/game/inventory">🎒 Sac & Équipement</a>
                     <a href="/battle/explore">🌲 Forêt</a>
                     <a href="/game/stats">📜 Héros</a>

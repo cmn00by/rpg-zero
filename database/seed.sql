@@ -31,6 +31,47 @@ INSERT INTO `levels` (`level`, `xp_required`, `stat_points_reward`, `gold_reward
 (19, 26500, 11, 2500, 1, 'Maître de l''Infini'),
 (20, 33000, 15, 3500, 3, 'Légende Immortelle');
 
+-- Zones du Monde
+INSERT INTO `world_zones` (`id`, `code`, `name`, `description`, `width`, `height`, `min_level`, `bg_theme`) VALUES
+(1, 'orepierre_valley', 'La Vallée d''Orépierre', 'Une contrée fertile ceinturée de montagnes austères et de forêts denses. Au centre s''élève la fière cité d''Orépierre.', 5, 5, 1, 'valley');
+
+-- Grille des 25 Cases de la Vallée d'Orépierre (Zone 1)
+INSERT INTO `map_tiles` (`zone_id`, `x`, `y`, `tile_type`, `name`, `description`, `icon`, `is_walkable`, `ap_cost`, `action_type`, `action_target_id`, `action_label`) VALUES
+-- Ligne Y=0 (Nord)
+(1, 0, 0, 'mountain', 'Pics des Géants', 'Des cimes escarpées et glacées interdisent tout passage.', '🏔️', 0, 1, 'none', NULL, NULL),
+(1, 1, 0, 'forest', 'Forêt du Loup Gris', 'Les frondaisons épaisses dissimulent des bêtes féroces.', '🌲', 1, 1, 'battle_zone', NULL, 'Traquer les bêtes 🐺'),
+(1, 2, 0, 'forest', 'Bosquet des Druides', 'Une clairière paisible où les esprits de la nature murmurent.', '🌿', 1, 1, 'none', NULL, NULL),
+(1, 3, 0, 'forest', 'Sous-bois Obscur', 'Les branches tordues filtrent à peine les rayons du soleil.', '🌲', 1, 1, 'battle_zone', NULL, 'Explorer la forêt ⚔️'),
+(1, 4, 0, 'mountain', 'Monts de Cristal', 'Des parois rocheuses abruptes bloquent l''horizon.', '🏔️', 0, 1, 'none', NULL, NULL),
+
+-- Ligne Y=1 (Nord-Centre)
+(1, 0, 1, 'forest', 'Orée des Bois', 'La transition entre la vallée et les bois sombres.', '🌲', 1, 1, 'battle_zone', NULL, 'Chasser les gobelins 👺'),
+(1, 1, 1, 'road', 'Sentier des Chasseurs', 'Un chemin de terre battue longeant la lisière de la forêt.', '🌾', 1, 1, 'none', NULL, NULL),
+(1, 2, 1, 'road', 'Porte Nord d''Orépierre', 'La grande arche en granit surveillée par des sentinelles en armure.', '⛩️', 1, 1, 'none', NULL, NULL),
+(1, 3, 1, 'road', 'Chemin des Collines', 'Une pente douce menant vers les prairies orientales.', '🌾', 1, 1, 'none', NULL, NULL),
+(1, 4, 1, 'water', 'Ruisseau Miroitant', 'Des eaux tumultueuses et profondes empêchent la traversée à pied.', '🌊', 0, 1, 'none', NULL, NULL),
+
+-- Ligne Y=2 (Centre - Cité d'Orépierre)
+(1, 0, 2, 'city', 'Caserne de la Milice', 'Les soldats du royaume s''entraînent au maniement des armes.', '🛡️', 1, 1, 'none', NULL, NULL),
+(1, 1, 2, 'tavern', 'La Taverne du Sanglier', 'Une auberge chaleureuse où brûle un feu de cheminée. Bière fraîche et lits douillets pour reprendre des forces.', '🍺', 1, 1, 'tavern', NULL, 'Entrer à la Taverne 🍺'),
+(1, 2, 2, 'city', 'Place Centrale d''Orépierre', 'Le cœur battant de la cité. Les marchands et aventuriers s''y croisent autour de la grande fontaine.', '🏰', 1, 1, 'none', NULL, NULL),
+(1, 3, 2, 'shop', 'La Forge de Durin', 'Le marteau du maître forgeron résonne sur l''enclume. Des armes acérées et des armures de qualité y sont en vente.', '🔨', 1, 1, 'shop', 1, 'Ouvrir l''Échoppe de Forge 🔨'),
+(1, 4, 2, 'water', 'Le Lac d''Orépierre', 'Un vaste lac d''eau pure où nagent des créatures mystiques.', '🌊', 0, 1, 'none', NULL, NULL),
+
+-- Ligne Y=3 (Sud-Centre)
+(1, 0, 3, 'road', 'Sentier des Pâturages', 'De vastes étendues d''herbe où paissent les troupeaux.', '🌾', 1, 1, 'none', NULL, NULL),
+(1, 1, 3, 'road', 'Chemin du Marché', 'Une allée pavée rejoignant les faubourgs sud de la ville.', '🌾', 1, 1, 'none', NULL, NULL),
+(1, 2, 3, 'road', 'Porte Sud de la Cité', 'Une lourde herse de chêne ouvrant sur les terres australes.', '⛩️', 1, 1, 'none', NULL, NULL),
+(1, 3, 3, 'forest', 'Fourré Épineux', 'Des buissons touffus où se cachent des bandits de grand chemin.', '🌲', 1, 1, 'battle_zone', NULL, 'Traquer les bandits 🦹'),
+(1, 4, 3, 'ruins', 'Ruines du Vieux Temple', 'Des colonnes effondrées et une stèle gravée de runes oubliées.', '📜', 1, 1, 'none', NULL, NULL),
+
+-- Ligne Y=4 (Sud)
+(1, 0, 4, 'mountain', 'Falaises Infranchissables', 'D''immenses falaises de granit se dressent vers le ciel.', '🏔️', 0, 1, 'none', NULL, NULL),
+(1, 1, 4, 'forest', 'Marais Fangeux', 'Un sol boueux et brumeux où rôdent des bêtes immondes.', '🌲', 1, 1, 'battle_zone', NULL, 'Affronter les monstres 💀'),
+(1, 2, 4, 'road', 'Route Royale du Sud', 'La grande route pavée descendant vers les contrées lointaines.', '🌾', 1, 1, 'none', NULL, NULL),
+(1, 3, 4, 'forest', 'Bois Morts', 'Des arbres calcinés et une atmosphère pesante.', '🌲', 1, 1, 'battle_zone', NULL, 'Explorer les bois morts ☠️'),
+(1, 4, 4, 'boss', 'Repaire du Troll des Cavernes', 'L''entrée d''une sombre caverne jonchée d''ossements. Un grognement sourd s''en échappe...', '👹', 1, 1, 'battle_zone', NULL, 'Défier le Mini-Boss 👹');
+
 -- Catalogue d'Objets
 INSERT INTO `items` (`code`, `name`, `type`, `rarity`, `icon`, `description`, `bonus_attack`, `bonus_defense`, `bonus_str`, `bonus_agi`, `bonus_int`, `bonus_hp`, `bonus_ap`, `heal_hp`, `restore_ap`, `buy_price`, `sell_price`, `level_required`) VALUES
 -- Armes

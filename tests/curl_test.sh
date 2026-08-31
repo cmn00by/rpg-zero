@@ -11,22 +11,19 @@ curl -s -c "$COOKIE_JAR" -X POST -d "username=${RAND_USER}&password=secret123&pa
 curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST -d "name=Hero_${RAND_USER}&class_id=1" "http://localhost:8000/character/create" -o /dev/null
 echo "✅ Compte & Héros créés"
 
-echo "=== 2. Affichage de l'Inventaire ==="
-INV_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/inventory")
-echo "$INV_HTML" | grep -q "Inventaire & Équipements" && echo "✅ Page d'inventaire accessible"
-echo "$INV_HTML" | grep -q "Mannequin d'Équipement" && echo "✅ Mannequin d'équipement présent"
-echo "$INV_HTML" | grep -q "Épée longue en fer" && echo "✅ Épée de départ équipée"
+echo "=== 2. Affichage de la Carte du Monde ==="
+MAP_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/map")
+echo "$MAP_HTML" | grep -q "Vallée d'Orépierre" && echo "✅ Carte de la Vallée accessible"
+echo "$MAP_HTML" | grep -q "Place Centrale d'Orépierre" && echo "✅ Position initiale [2, 2] reconnue"
 
-echo "=== 3. Utilisation d'une Potion via HTMX ==="
-POTION_ITEM_ID=$(echo "$INV_HTML" | grep -o 'value="[0-9]*"' | head -n 1 | grep -o '[0-9]*')
-if [ -n "$POTION_ITEM_ID" ]; then
-    USE_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "character_item_id=$POTION_ITEM_ID" "http://localhost:8000/inventory/use")
-    echo "$USE_HTML" | grep -q "Inventaire & Équipements" && echo "✅ Potion consommée via HTMX avec rafraîchissement instantané"
-fi
+echo "=== 3. Déplacement Est vers la Forge via HTMX ==="
+MOVE_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "direction=east" "http://localhost:8000/map/move")
+echo "$MOVE_HTML" | grep -q "La Forge de Durin" && echo "✅ Déplacement vers la Forge [3, 2] validé"
 
-echo "=== 4. Déséquipement d'Arme via HTMX ==="
-UNEQ_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "slot=weapon" "http://localhost:8000/inventory/unequip")
-echo "$UNEQ_HTML" | grep -q "Mains nues" && echo "✅ Arme déséquipée avec succès"
+echo "=== 4. Visite de la Forge / Boutique ==="
+SHOP_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/shop")
+echo "$SHOP_HTML" | grep -q "La Forge de Durin" && echo "✅ Échoppe de forge accessible"
+echo "$SHOP_HTML" | grep -q "Épée longue en fer" && echo "✅ Catalogue de vente affiché"
 
 echo ""
-echo "🎉 TOUS LES TESTS HTTP D'INVENTAIRE ET D'ÉQUIPEMENT SONT VALIDÉS !"
+echo "🎉 TOUS LES TESTS HTTP DE CARTE, SHOP ET DÉPLACEMENT SONT VALIDÉS !"

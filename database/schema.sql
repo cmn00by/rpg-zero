@@ -1,10 +1,12 @@
--- Schema initial RPG-Zero
+-- Schema RPG-Zero
 CREATE DATABASE IF NOT EXISTS `rpg_zero` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `rpg_zero`;
 
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
+DROP TABLE IF EXISTS `map_tiles`;
+DROP TABLE IF EXISTS `world_zones`;
 DROP TABLE IF EXISTS `character_items`;
 DROP TABLE IF EXISTS `items`;
 DROP TABLE IF EXISTS `battle_logs`;
@@ -44,10 +46,42 @@ CREATE TABLE `levels` (
     `title` VARCHAR(50) NOT NULL DEFAULT 'Aventurier'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `world_zones` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `code` VARCHAR(50) NOT NULL UNIQUE,
+    `name` VARCHAR(80) NOT NULL,
+    `description` TEXT NOT NULL,
+    `width` INT NOT NULL DEFAULT 5,
+    `height` INT NOT NULL DEFAULT 5,
+    `min_level` INT NOT NULL DEFAULT 1,
+    `bg_theme` VARCHAR(50) NOT NULL DEFAULT 'valley'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `map_tiles` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `zone_id` INT NOT NULL,
+    `x` INT NOT NULL,
+    `y` INT NOT NULL,
+    `tile_type` VARCHAR(30) NOT NULL,
+    `name` VARCHAR(80) NOT NULL,
+    `description` TEXT NOT NULL,
+    `icon` VARCHAR(20) NOT NULL,
+    `is_walkable` TINYINT(1) NOT NULL DEFAULT 1,
+    `ap_cost` INT NOT NULL DEFAULT 1,
+    `action_type` VARCHAR(50) NOT NULL DEFAULT 'none',
+    `action_target_id` INT NULL,
+    `action_label` VARCHAR(80) NULL,
+    FOREIGN KEY (`zone_id`) REFERENCES `world_zones`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `unique_zone_coord` (`zone_id`, `x`, `y`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `characters` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `user_id` INT NOT NULL,
     `class_id` INT NOT NULL,
+    `current_zone_id` INT NOT NULL DEFAULT 1,
+    `pos_x` INT NOT NULL DEFAULT 2,
+    `pos_y` INT NOT NULL DEFAULT 2,
     `name` VARCHAR(50) NOT NULL UNIQUE,
     `title` VARCHAR(50) NOT NULL DEFAULT 'Novice',
     `level` INT NOT NULL DEFAULT 1,
@@ -66,7 +100,8 @@ CREATE TABLE `characters` (
     `last_activity` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-    FOREIGN KEY (`class_id`) REFERENCES `character_classes`(`id`)
+    FOREIGN KEY (`class_id`) REFERENCES `character_classes`(`id`),
+    FOREIGN KEY (`current_zone_id`) REFERENCES `world_zones`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `items` (

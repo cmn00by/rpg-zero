@@ -725,3 +725,220 @@ body {
     background: #251c33;
     box-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
 }
+
+/* ==========================================================================
+   CARTE DU MONDE (WORLD MAP GRID 5x5) & D-PAD
+   ========================================================================== */
+
+.map-view-layout {
+    display: grid;
+    grid-template-columns: 460px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 950px) {
+    .map-view-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.map-grid-column {
+    background: #14101c;
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.world-map-grid-matrix {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    background: #0a080f;
+    border: 2px solid #3d324f;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.map-tile-cell {
+    aspect-ratio: 1 / 1;
+    min-height: 64px;
+    background: #181324;
+    border: 1px solid #2f2540;
+    border-radius: 6px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.map-tile-cell.player-current {
+    border-color: var(--accent-gold);
+    background: #2a1e12;
+    box-shadow: 0 0 14px rgba(241, 196, 15, 0.7), inset 0 0 10px rgba(241, 196, 15, 0.4);
+    transform: scale(1.05);
+    z-index: 3;
+}
+
+.map-tile-cell.adjacent-movable {
+    border-color: #27ae60;
+    background: #12241b;
+    cursor: pointer;
+}
+.map-tile-cell.adjacent-movable:hover {
+    border-color: #2ecc71;
+    background: #193828;
+    transform: scale(1.04);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+.map-tile-cell.obstacle-cell {
+    background: #0d0a14;
+    border-color: #1f192b;
+    opacity: 0.4;
+}
+
+.cell-inner-static {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.cell-icon {
+    font-size: 1.8rem;
+    user-select: none;
+}
+
+.cell-coord {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-family: monospace;
+    opacity: 0.7;
+}
+
+.player-avatar-pin {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: #c0392b;
+    border: 2px solid #ffd700;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    box-shadow: 0 0 8px #f1c40f;
+}
+
+.btn-tile-click-move {
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+}
+
+.map-dpad-container {
+    margin-top: 15px;
+    background: #100d17;
+    border: 1px solid #362c47;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.dpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    max-width: 260px;
+    margin: 0 auto;
+}
+
+.dpad-btn {
+    padding: 6px 4px;
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+.dpad-center-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: #251c33;
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+}
+
+/* Détail de la case actuelle */
+.tile-detail-column {
+    background: #14101c;
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.tile-story-card {
+    background: #191424;
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.tile-story-header {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    border-bottom: 1px solid #2f2540;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.story-icon-box {
+    font-size: 2.8rem;
+    width: 60px;
+    height: 60px;
+    background: #251c33;
+    border: 1px solid var(--border-gold);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tile-story-description {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.contextual-action-box {
+    background: #191424;
+    border: 1px solid #3d324f;
+    border-radius: 8px;
+    padding: 18px;
+}
+
+.action-card-highlight {
+    background: #20172e;
+    border: 1px solid var(--border-gold);
+    border-radius: 6px;
+    padding: 16px;
+}

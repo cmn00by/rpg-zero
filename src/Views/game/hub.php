@@ -16,6 +16,18 @@
         <?php endif; ?>
 
         <div class="hub-grid">
+            <!-- Carte du Monde -->
+            <div class="hub-card">
+                <div class="hub-card-icon">🗺️</div>
+                <h3 style="color: var(--accent-gold); margin-bottom: 8px;">Carte du Monde</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Explorez la vallée case par case, visitez la forge et découvrez les secrets ancestraux.
+                </p>
+                <a href="/game/map" class="btn-retro btn-primary" style="width: 100%;">
+                    Explorer la Carte 🧭
+                </a>
+            </div>
+
             <!-- Taverne -->
             <div class="hub-card">
                 <div class="hub-card-icon">🍺</div>
