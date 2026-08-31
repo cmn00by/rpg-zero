@@ -1,3 +1,4 @@
+<?php \Core\View::partial('partials/hero_strip', ['character' => $character, 'oob' => true]); ?>
 <div id="inventory-container" class="retro-box" style="margin-bottom: 30px;">
     <div class="retro-box-header">
         <div style="display:flex; align-items:center; gap: 12px;">

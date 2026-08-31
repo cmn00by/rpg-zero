@@ -38,41 +38,7 @@ $flashes = Session::getFlashes();
     </header>
 
     <?php if ($activeChar): ?>
-        <div class="hero-status-strip">
-            <div class="status-badge">
-                <span><?= $activeChar['class_icon'] ?> <strong><?= htmlspecialchars($activeChar['name']) ?></strong> (Niv. <?= $activeChar['level'] ?> - <em><?= htmlspecialchars($activeChar['title'] ?? 'Novice') ?></em>)</span>
-            </div>
-            <div class="status-badge" style="min-width: 140px;">
-                <span>❤️ PV:</span>
-                <div class="progress-bar-container" style="display:inline-block; vertical-align:middle; width:90px;">
-                    <div class="progress-bar-fill hp" style="width: <?= min(100, round(($activeChar['current_hp'] / max(1, $activeChar['effective_max_hp'])) * 100)) ?>%;"></div>
-                    <span class="progress-text"><?= $activeChar['current_hp'] ?>/<?= $activeChar['effective_max_hp'] ?></span>
-                </div>
-            </div>
-            <div class="status-badge" style="min-width: 140px;">
-                <span>⚡ PA:</span>
-                <div class="progress-bar-container" style="display:inline-block; vertical-align:middle; width:90px;">
-                    <div class="progress-bar-fill ap" style="width: <?= min(100, round(($activeChar['current_ap'] / max(1, $activeChar['effective_max_ap'])) * 100)) ?>%;"></div>
-                    <span class="progress-text"><?= $activeChar['current_ap'] ?>/<?= $activeChar['effective_max_ap'] ?></span>
-                </div>
-            </div>
-            <div class="status-badge" style="min-width: 140px;">
-                <span>✨ XP:</span>
-                <div class="progress-bar-container" style="display:inline-block; vertical-align:middle; width:90px;">
-                    <div class="progress-bar-fill xp" style="width: <?= min(100, round(($activeChar['xp'] / max(1, $activeChar['xp_next'])) * 100)) ?>%;"></div>
-                    <span class="progress-text"><?= $activeChar['xp'] ?>/<?= $activeChar['xp_next'] ?></span>
-                </div>
-            </div>
-            <div class="status-badge">
-                <span>⚔️ Atk: <strong><?= $activeChar['total_attack'] ?></strong></span>
-            </div>
-            <div class="status-badge">
-                <span>🛡️ Def: <strong><?= $activeChar['total_defense'] ?></strong></span>
-            </div>
-            <div class="status-badge">
-                <span>💰 <strong><?= $activeChar['gold'] ?></strong> pièces</span>
-            </div>
-        </div>
+        <?php \Core\View::partial('partials/hero_strip', ['character' => $activeChar, 'oob' => false]); ?>
     <?php endif; ?>
 
     <main class="main-wrapper">

@@ -1,3 +1,4 @@
+<?php \Core\View::partial('partials/hero_strip', ['character' => $character, 'oob' => true]); ?>
 <div id="stats-container" class="retro-box" style="max-width: 650px; margin: 0 auto;">
     <div class="retro-box-header">
         <span>📜 Fiche de <?= htmlspecialchars($character['name']) ?></span>
