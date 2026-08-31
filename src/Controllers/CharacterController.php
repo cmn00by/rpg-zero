@@ -66,13 +66,6 @@ class CharacterController {
         $stat = trim($_POST['stat'] ?? '');
 
         $result = Character::allocateStat($charId, $stat);
-
-        if (!$result['success']) {
-            Session::setFlash('error', $result['error']);
-        } else {
-            Session::setFlash('success', 'Point de caractéristique attribué avec succès !');
-        }
-
         $character = $result['character'] ?? Character::findById($charId);
 
         if (isset($_SERVER['HTTP_HX_REQUEST'])) {
@@ -80,6 +73,12 @@ class CharacterController {
                 'character' => $character
             ]);
             exit;
+        }
+
+        if (!$result['success']) {
+            Session::setFlash('error', $result['error']);
+        } else {
+            Session::setFlash('success', 'Point de caractéristique attribué avec succès !');
         }
 
         header('Location: /game/stats');

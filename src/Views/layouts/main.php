@@ -56,6 +56,13 @@ $flashes = Session::getFlashes();
                     <span class="progress-text"><?= $activeChar['current_ap'] ?>/<?= $activeChar['effective_max_ap'] ?></span>
                 </div>
             </div>
+            <div class="status-badge" style="min-width: 140px;">
+                <span>✨ XP:</span>
+                <div class="progress-bar-container" style="display:inline-block; vertical-align:middle; width:90px;">
+                    <div class="progress-bar-fill xp" style="width: <?= min(100, round(($activeChar['xp'] / max(1, $activeChar['xp_next'])) * 100)) ?>%;"></div>
+                    <span class="progress-text"><?= $activeChar['xp'] ?>/<?= $activeChar['xp_next'] ?></span>
+                </div>
+            </div>
             <div class="status-badge">
                 <span>⚔️ Atk: <strong><?= $activeChar['total_attack'] ?></strong></span>
             </div>

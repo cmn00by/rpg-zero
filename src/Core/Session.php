@@ -30,7 +30,9 @@ class Session {
 
     public static function setFlash(string $type, string $message): void {
         self::start();
-        $_SESSION['flash'][$type][] = $message;
+        if (!isset($_SESSION['flash'][$type]) || !in_array($message, $_SESSION['flash'][$type], true)) {
+            $_SESSION['flash'][$type][] = $message;
+        }
     }
 
     public static function getFlashes(): array {

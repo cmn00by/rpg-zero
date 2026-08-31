@@ -26,64 +26,32 @@ class InventoryController {
     public function equip(): void {
         $charId = Session::getCharacterId();
         $charItemId = (int)($_POST['character_item_id'] ?? 0);
-
         $result = Inventory::equipItem($charId, $charItemId);
-
-        if (!$result['success']) {
-            Session::setFlash('error', $result['error']);
-        } else {
-            Session::setFlash('success', $result['message']);
-        }
-
-        $this->respondOrRedirect($charId);
+        $this->respondOrRedirect($charId, $result);
     }
 
     public function unequip(): void {
         $charId = Session::getCharacterId();
         $slot = trim($_POST['slot'] ?? '');
-
         $result = Inventory::unequipItem($charId, $slot);
-
-        if (!$result['success']) {
-            Session::setFlash('error', $result['error']);
-        } else {
-            Session::setFlash('success', $result['message']);
-        }
-
-        $this->respondOrRedirect($charId);
+        $this->respondOrRedirect($charId, $result);
     }
 
     public function useItem(): void {
         $charId = Session::getCharacterId();
         $charItemId = (int)($_POST['character_item_id'] ?? 0);
-
         $result = Inventory::consumeItem($charId, $charItemId);
-
-        if (!$result['success']) {
-            Session::setFlash('error', $result['error']);
-        } else {
-            Session::setFlash('success', $result['message']);
-        }
-
-        $this->respondOrRedirect($charId);
+        $this->respondOrRedirect($charId, $result);
     }
 
     public function sellItem(): void {
         $charId = Session::getCharacterId();
         $charItemId = (int)($_POST['character_item_id'] ?? 0);
-
         $result = Inventory::sellItem($charId, $charItemId);
-
-        if (!$result['success']) {
-            Session::setFlash('error', $result['error']);
-        } else {
-            Session::setFlash('success', $result['message']);
-        }
-
-        $this->respondOrRedirect($charId);
+        $this->respondOrRedirect($charId, $result);
     }
 
-    private function respondOrRedirect(int $charId): void {
+    private function respondOrRedirect(int $charId, array $result): void {
         if (isset($_SERVER['HTTP_HX_REQUEST'])) {
             $character = Character::getEffectiveStats($charId);
             $bagItems = Inventory::getBagItems($charId);
@@ -97,6 +65,12 @@ class InventoryController {
                 'bonuses' => $bonuses
             ]);
             exit;
+        }
+
+        if (!$result['success']) {
+            Session::setFlash('error', $result['error'] ?? 'Action impossible.');
+        } else {
+            Session::setFlash('success', $result['message'] ?? 'Action effectuée.');
         }
 
         header('Location: /game/inventory');
