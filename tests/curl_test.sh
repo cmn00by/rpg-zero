@@ -4,9 +4,11 @@ set -e
 COOKIE_JAR="/tmp/rpg_e2e_cookies.txt"
 rm -f "$COOKIE_JAR"
 
+RAND_USER="test_$(date +%s)"
+
 echo "=== 1. Inscription & Création ==="
-curl -s -c "$COOKIE_JAR" -X POST -d "username=yvain&password=secret123&password_confirm=secret123" "http://localhost:8000/register" -o /dev/null
-curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST -d "name=YvainLeChevalier&class_id=1" "http://localhost:8000/character/create" -o /dev/null
+curl -s -c "$COOKIE_JAR" -X POST -d "username=${RAND_USER}&password=secret123&password_confirm=secret123" "http://localhost:8000/register" -o /dev/null
+curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST -d "name=Hero_${RAND_USER}&class_id=1" "http://localhost:8000/character/create" -o /dev/null
 echo "✅ Compte & Héros créés"
 
 echo "=== 2. Affichage de l'Inventaire ==="
@@ -16,7 +18,6 @@ echo "$INV_HTML" | grep -q "Équipement Actif" && echo "✅ Mannequin d'équipem
 echo "$INV_HTML" | grep -q "Épée longue en fer" && echo "✅ Épée de départ équipée"
 
 echo "=== 3. Utilisation d'une Potion via HTMX ==="
-# Récupérer l'ID de la potion dans le sac
 POTION_ITEM_ID=$(echo "$INV_HTML" | grep -o 'value="[0-9]*"' | head -n 1 | grep -o '[0-9]*')
 if [ -n "$POTION_ITEM_ID" ]; then
     USE_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "character_item_id=$POTION_ITEM_ID" "http://localhost:8000/inventory/use")

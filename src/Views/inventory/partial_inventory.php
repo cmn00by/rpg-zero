@@ -194,15 +194,32 @@
                         </div>
                     <?php else: ?>
                         <?php foreach ($bagItems as $item): ?>
-                            <div class="bag-item-card <?= $item['rarity'] ?>">
+                            <?php $canEquip = ((int)$character['level'] >= (int)$item['level_required']); ?>
+                            <div class="bag-item-card <?= $item['rarity'] ?>" style="<?= !$canEquip && $item['type'] !== 'consumable' ? 'opacity: 0.85;' : '' ?>">
                                 <div class="item-icon-box"><?= $item['icon'] ?></div>
                                 <div style="flex:1;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap: 4px;">
                                         <strong class="item-name <?= $item['rarity'] ?>"><?= htmlspecialchars($item['name']) ?></strong>
-                                        <?php if ($item['quantity'] > 1): ?>
-                                            <span class="badge-qty">x<?= $item['quantity'] ?></span>
-                                        <?php endif; ?>
+                                        
+                                        <div style="display:flex; gap: 6px; align-items:center;">
+                                            <?php if ($item['level_required'] > 1): ?>
+                                                <?php if ($canEquip): ?>
+                                                    <span style="font-size:0.75rem; background: #143522; color: #2ecc71; border: 1px solid #27ae60; padding: 1px 6px; border-radius: 3px;">
+                                                        Niv. <?= $item['level_required'] ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span style="font-size:0.75rem; background: #3d1414; color: #e74c3c; border: 1px solid #c0392b; padding: 1px 6px; border-radius: 3px; font-weight:bold;">
+                                                        🔒 Niv. <?= $item['level_required'] ?> requis
+                                                    </span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
+                                            <?php if ($item['quantity'] > 1): ?>
+                                                <span class="badge-qty">x<?= $item['quantity'] ?></span>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
+
                                     <p style="font-size:0.82rem; color: var(--text-muted); margin: 3px 0;"><?= htmlspecialchars($item['description']) ?></p>
                                     
                                     <div class="item-bonus-tags">
@@ -227,9 +244,15 @@
                                     <?php else: ?>
                                         <form hx-post="/inventory/equip" hx-target="#inventory-container" hx-swap="outerHTML" style="margin:0;">
                                             <input type="hidden" name="character_item_id" value="<?= $item['character_item_id'] ?>">
-                                            <button type="submit" class="btn-retro btn-stat-plus" style="font-size:0.8rem; padding: 4px 10px; width: 100%;" <?= ($character['level'] < $item['level_required']) ? 'disabled title="Niveau ' . $item['level_required'] . ' requis"' : '' ?>>
-                                                Équiper 🛡️
-                                            </button>
+                                            <?php if ($canEquip): ?>
+                                                <button type="submit" class="btn-retro btn-stat-plus" style="font-size:0.8rem; padding: 4px 10px; width: 100%;">
+                                                    Équiper 🛡️
+                                                </button>
+                                            <?php else: ?>
+                                                <button type="button" disabled class="btn-retro" style="font-size:0.75rem; padding: 4px 8px; width: 100%; opacity: 0.5; cursor: not-allowed; border-color: #555;">
+                                                    🔒 Niv. <?= $item['level_required'] ?>
+                                                </button>
+                                            <?php endif; ?>
                                         </form>
                                     <?php endif; ?>
 
