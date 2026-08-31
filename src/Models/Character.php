@@ -179,8 +179,12 @@ class Character {
         $hpGained = (int)floor($secondsElapsed / $hpRegenRateSeconds);
         $apGained = (int)floor($secondsElapsed / $apRegenRateSeconds);
 
-        $newHp = min((int)$char['max_hp'], (int)$char['current_hp'] + $hpGained);
-        $newAp = min((int)$char['max_ap'], (int)$char['current_ap'] + $apGained);
+        $bonus = Inventory::getEquippedBonusTotals((int)$char['id']);
+        $effMaxHp = (int)$char['max_hp'] + $bonus['bonus_hp'];
+        $effMaxAp = (int)$char['max_ap'] + $bonus['bonus_ap'];
+
+        $newHp = min($effMaxHp, (int)$char['current_hp'] + $hpGained);
+        $newAp = min($effMaxAp, (int)$char['current_ap'] + $apGained);
 
         if ($newHp !== (int)$char['current_hp'] || $newAp !== (int)$char['current_ap']) {
             $db = Database::getConnection();
@@ -228,13 +232,22 @@ class Character {
             return false;
         }
 
+        $eff = self::getEffectiveStats($id);
+        $maxHp = (int)$eff['effective_max_hp'];
+        $maxAp = (int)$eff['effective_max_ap'];
+
         $db = Database::getConnection();
         $stmt = $db->prepare("
             UPDATE characters 
-            SET current_hp = max_hp, current_ap = max_ap, gold = gold - :cost, last_activity = NOW() 
+            SET current_hp = :hp, current_ap = :ap, gold = gold - :cost, last_activity = NOW() 
             WHERE id = :id
         ");
-        $stmt->execute(['cost' => $cost, 'id' => $id]);
+        $stmt->execute([
+            'hp' => $maxHp,
+            'ap' => $maxAp,
+            'cost' => $cost,
+            'id' => $id
+        ]);
         return true;
     }
 
@@ -295,8 +308,12 @@ class Character {
             $leveledUp = true;
         }
 
-        $currentHp = $leveledUp ? $char['max_hp'] : $char['current_hp'];
-        $currentAp = $leveledUp ? $char['max_ap'] : $char['current_ap'];
+        $bonus = Inventory::getEquippedBonusTotals($id);
+        $effMaxHp = (int)$char['max_hp'] + $bonus['bonus_hp'];
+        $effMaxAp = (int)$char['max_ap'] + $bonus['bonus_ap'];
+
+        $currentHp = $leveledUp ? $effMaxHp : $char['current_hp'];
+        $currentAp = $leveledUp ? $effMaxAp : $char['current_ap'];
 
         $db = Database::getConnection();
         $stmt = $db->prepare("

@@ -132,7 +132,7 @@ class Inventory {
     public static function equipItem(int $characterId, int $characterItemId): array {
         $db = Database::getConnection();
         $stmt = $db->prepare("
-            SELECT ci.*, i.type, i.level_required, i.name
+            SELECT ci.*, i.type, i.level_required, i.name, i.bonus_hp, i.bonus_ap
             FROM character_items ci
             JOIN items i ON ci.item_id = i.id
             WHERE ci.id = :id AND ci.character_id = :char_id AND ci.is_equipped = 0
@@ -172,6 +172,14 @@ class Inventory {
         ");
         $stmt->execute(['slot' => $slot, 'id' => $characterItemId]);
 
+        // Booster les PV et PA actuels si la pièce confère un bonus
+        $bonusHp = (int)$entry['bonus_hp'];
+        $bonusAp = (int)$entry['bonus_ap'];
+        if ($bonusHp > 0 || $bonusAp > 0) {
+            $stmt = $db->prepare("UPDATE characters SET current_hp = current_hp + :hp, current_ap = current_ap + :ap, last_activity = NOW() WHERE id = :id");
+            $stmt->execute(['hp' => $bonusHp, 'ap' => $bonusAp, 'id' => $characterId]);
+        }
+
         return ['success' => true, 'message' => "Vous avez équipé : {$entry['name']}."];
     }
 
@@ -204,6 +212,15 @@ class Inventory {
         ");
         $stmt->execute(['id' => $equipped['id']]);
 
+        // Ajuster si les PV/PA actuels dépassent le nouveau max effectif
+        $eff = Character::getEffectiveStats($characterId);
+        $clampedHp = min((int)$eff['effective_max_hp'], (int)$eff['current_hp']);
+        $clampedAp = min((int)$eff['effective_max_ap'], (int)$eff['current_ap']);
+        if ($clampedHp !== (int)$eff['current_hp'] || $clampedAp !== (int)$eff['current_ap']) {
+            $stmt = $db->prepare("UPDATE characters SET current_hp = :hp, current_ap = :ap, last_activity = NOW() WHERE id = :id");
+            $stmt->execute(['hp' => $clampedHp, 'ap' => $clampedAp, 'id' => $characterId]);
+        }
+
         return ['success' => true, 'message' => "Vous avez rangé {$equipped['name']} dans votre sac."];
     }
 
@@ -223,12 +240,12 @@ class Inventory {
             return ['success' => false, 'error' => 'Consommable introuvable.'];
         }
 
-        $char = Character::findById($characterId);
+        $eff = Character::getEffectiveStats($characterId);
         $healHp = (int)$entry['heal_hp'];
         $restoreAp = (int)$entry['restore_ap'];
 
-        $newHp = min((int)$char['max_hp'], (int)$char['current_hp'] + $healHp);
-        $newAp = min((int)$char['max_ap'], (int)$char['current_ap'] + $restoreAp);
+        $newHp = min((int)$eff['effective_max_hp'], (int)$eff['current_hp'] + $healHp);
+        $newAp = min((int)$eff['effective_max_ap'], (int)$eff['current_ap'] + $restoreAp);
 
         $stmt = $db->prepare("UPDATE characters SET current_hp = :hp, current_ap = :ap, last_activity = NOW() WHERE id = :id");
         $stmt->execute(['hp' => $newHp, 'ap' => $newAp, 'id' => $characterId]);

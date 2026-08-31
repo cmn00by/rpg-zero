@@ -108,4 +108,33 @@ $charSlotsAfter = Character::findById($charId)['inventory_slots'];
 assert($charSlotsAfter === ($charSlotsBefore + 1), "Inventory slots increased by 1 upon level up");
 echo "✅ Sac évolutif validé : Capacité portée à {$charSlotsAfter} emplacements (+1 slot débloqué) !\n";
 
-echo "\n✨ TOUS LES TESTS D'INVENTAIRE ET D'ÉQUIPEMENT SONT VALIDÉS AVEC SUCCÈS !\n";
+echo "=== 7. Test Soin Taverne avec Bonus de PV d'Équipement (Heaume +15 PV) ===\n";
+// Héros niveau 2 : donner et équiper le Heaume de fer (+15 PV)
+$ironHelm = Item::getByCode('iron_helm');
+Inventory::addItem($charId, $ironHelm['id']);
+$bag = Inventory::getBagItems($charId);
+$helmInBag = array_values(array_filter($bag, fn($i) => $i['code'] === 'iron_helm'))[0];
+$eqHelmRes = Inventory::equipItem($charId, $helmInBag['character_item_id']);
+assert($eqHelmRes['success'] === true, "Iron helm equipped");
+
+// Endommager le joueur à 50 PV
+Character::updateHp($charId, 50);
+
+// Se reposer à la taverne
+$healSuccess = Character::healAtTavern($charId, 10);
+assert($healSuccess === true, "Tavern rest successful");
+
+$charAfterHeal = Character::findById($charId);
+$effAfterHeal = Character::getEffectiveStats($charId);
+assert((int)$charAfterHeal['current_hp'] === 135, "HP fully restored to effective max 135 (120 base + 15 helm)");
+assert((int)$effAfterHeal['effective_max_hp'] === 135, "Effective max HP is 135");
+echo "✅ Soin à la Taverne avec équipement validé : 135/135 PV (120 base + 15 Heaume de fer) !\n";
+
+// Déséquiper le Heaume : les PV max redescendent à 120 et current_hp est automatiquement ajusté à 120
+Inventory::unequipItem($charId, 'head');
+$charAfterUnequip = Character::findById($charId);
+assert((int)$charAfterUnequip['current_hp'] === 120, "HP clamped back to 120 upon unequipping helm");
+echo "✅ Déséquipement avec ajustement automatique des PV Max validé (120/120 PV) !\n";
+
+echo "\n✨ TOUS LES TESTS D'INVENTAIRE, D'ÉQUIPEMENT ET DE SOIN SONT VALIDÉS AVEC SUCCÈS !\n";
+
