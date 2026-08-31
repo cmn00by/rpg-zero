@@ -30,12 +30,24 @@
                 </form>
             </div>
 
+            <!-- Sac & Équipement -->
+            <div class="hub-card">
+                <div class="hub-card-icon">🎒</div>
+                <h3 style="color: var(--accent-gold); margin-bottom: 8px;">Sac & Équipement</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Équipez vos armes, armures et organisez votre sac à dos extensible.
+                </p>
+                <a href="/game/inventory" class="btn-retro btn-stat-plus" style="width: 100%;">
+                    Ouvrir le Sac 🛡️
+                </a>
+            </div>
+
             <!-- Exploration / Forêt -->
             <div class="hub-card">
                 <div class="hub-card-icon">🌲</div>
                 <h3 style="color: var(--accent-gold); margin-bottom: 8px;">La Forêt Sombre</h3>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
-                    Traquez des créatures sauvages, gagnez de l'expérience et récoltez du butin.
+                    Traquez des créatures sauvages, gagnez de l'expérience et pillez de l'équipement.
                 </p>
                 <a href="/battle/explore" class="btn-retro btn-primary" style="width: 100%;">
                     Partir en Expédition ⚔️
@@ -47,10 +59,10 @@
                 <div class="hub-card-icon">📜</div>
                 <h3 style="color: var(--accent-gold); margin-bottom: 8px;">Fiche de Personnage</h3>
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
-                    Consultez vos statistiques détaillées, votre progression en niveau et vos attributs.
+                    Consultez vos statistiques, vos bonus d'équipement et répartissez vos attributs.
                 </p>
                 <a href="/game/stats" class="btn-retro btn-blue" style="width: 100%;">
-                    Consulter 🛡️
+                    Consulter 📜
                 </a>
             </div>
         </div>

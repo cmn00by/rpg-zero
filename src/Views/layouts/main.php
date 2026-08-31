@@ -4,7 +4,7 @@ use Models\Character;
 
 $userId = Session::getUserId();
 $charId = Session::getCharacterId();
-$activeChar = $charId ? Character::findById($charId) : null;
+$activeChar = $charId ? Character::getEffectiveStats($charId) : null;
 $flashes = Session::getFlashes();
 ?>
 <!DOCTYPE html>
@@ -23,6 +23,7 @@ $flashes = Session::getFlashes();
             <?php if ($userId): ?>
                 <?php if ($activeChar): ?>
                     <a href="/game/hub">🏰 Ville</a>
+                    <a href="/game/inventory">🎒 Sac & Équipement</a>
                     <a href="/battle/explore">🌲 Forêt</a>
                     <a href="/game/stats">📜 Héros</a>
                 <?php else: ?>
@@ -39,21 +40,27 @@ $flashes = Session::getFlashes();
     <?php if ($activeChar): ?>
         <div class="hero-status-strip">
             <div class="status-badge">
-                <span><?= $activeChar['class_icon'] ?> <strong><?= htmlspecialchars($activeChar['name']) ?></strong> (Niv. <?= $activeChar['level'] ?>)</span>
+                <span><?= $activeChar['class_icon'] ?> <strong><?= htmlspecialchars($activeChar['name']) ?></strong> (Niv. <?= $activeChar['level'] ?> - <em><?= htmlspecialchars($activeChar['title'] ?? 'Novice') ?></em>)</span>
             </div>
             <div class="status-badge" style="min-width: 140px;">
                 <span>❤️ PV:</span>
                 <div class="progress-bar-container" style="display:inline-block; vertical-align:middle; width:90px;">
-                    <div class="progress-bar-fill hp" style="width: <?= min(100, round(($activeChar['current_hp'] / $activeChar['max_hp']) * 100)) ?>%;"></div>
-                    <span class="progress-text"><?= $activeChar['current_hp'] ?>/<?= $activeChar['max_hp'] ?></span>
+                    <div class="progress-bar-fill hp" style="width: <?= min(100, round(($activeChar['current_hp'] / max(1, $activeChar['effective_max_hp'])) * 100)) ?>%;"></div>
+                    <span class="progress-text"><?= $activeChar['current_hp'] ?>/<?= $activeChar['effective_max_hp'] ?></span>
                 </div>
             </div>
             <div class="status-badge" style="min-width: 140px;">
                 <span>⚡ PA:</span>
                 <div class="progress-bar-container" style="display:inline-block; vertical-align:middle; width:90px;">
-                    <div class="progress-bar-fill ap" style="width: <?= min(100, round(($activeChar['current_ap'] / $activeChar['max_ap']) * 100)) ?>%;"></div>
-                    <span class="progress-text"><?= $activeChar['current_ap'] ?>/<?= $activeChar['max_ap'] ?></span>
+                    <div class="progress-bar-fill ap" style="width: <?= min(100, round(($activeChar['current_ap'] / max(1, $activeChar['effective_max_ap'])) * 100)) ?>%;"></div>
+                    <span class="progress-text"><?= $activeChar['current_ap'] ?>/<?= $activeChar['effective_max_ap'] ?></span>
                 </div>
+            </div>
+            <div class="status-badge">
+                <span>⚔️ Atk: <strong><?= $activeChar['total_attack'] ?></strong></span>
+            </div>
+            <div class="status-badge">
+                <span>🛡️ Def: <strong><?= $activeChar['total_defense'] ?></strong></span>
             </div>
             <div class="status-badge">
                 <span>💰 <strong><?= $activeChar['gold'] ?></strong> pièces</span>

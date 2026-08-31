@@ -22,6 +22,7 @@ use Controllers\AuthController;
 use Controllers\CharacterController;
 use Controllers\GameController;
 use Controllers\BattleController;
+use Controllers\InventoryController;
 
 Session::start();
 
@@ -44,6 +45,13 @@ $router->get('/game/hub', [GameController::class, 'showHub'], true, true);
 $router->post('/game/tavern/rest', [GameController::class, 'restAtTavern'], true, true);
 $router->get('/game/stats', [CharacterController::class, 'showStats'], true, true);
 $router->post('/character/allocate-stat', [CharacterController::class, 'allocateStat'], true, true);
+
+// Inventaire & Équipement
+$router->get('/game/inventory', [InventoryController::class, 'showInventory'], true, true);
+$router->post('/inventory/equip', [InventoryController::class, 'equip'], true, true);
+$router->post('/inventory/unequip', [InventoryController::class, 'unequip'], true, true);
+$router->post('/inventory/use', [InventoryController::class, 'useItem'], true, true);
+$router->post('/inventory/sell', [InventoryController::class, 'sellItem'], true, true);
 
 // Combats & Exploration
 $router->get('/battle/explore', [BattleController::class, 'showExplore'], true, true);

@@ -13,6 +13,10 @@
     --accent-blue: #2980b9;
     --accent-green: #27ae60;
     --accent-gold: #f1c40f;
+    --rarity-common: #c2b9a7;
+    --rarity-rare: #5dade2;
+    --rarity-epic: #af7ac5;
+    --rarity-legendary: #f39c12;
 }
 
 * {
@@ -91,7 +95,7 @@ body {
 /* Main Container */
 .main-wrapper {
     flex: 1;
-    max-width: 1000px;
+    max-width: 1050px;
     width: 100%;
     margin: 25px auto;
     padding: 0 15px;
@@ -210,13 +214,13 @@ body {
 }
 
 .btn-stat-plus {
-    padding: 3px 8px;
+    padding: 4px 10px;
     font-size: 0.85rem;
     background: linear-gradient(180deg, #7d6608, #4d3e05);
     border-color: #f1c40f;
     color: #fff;
     font-weight: bold;
-    border-radius: 3px;
+    border-radius: 4px;
 }
 .btn-stat-plus:hover {
     background: linear-gradient(180deg, #b7950b, #7d6608);
@@ -288,6 +292,121 @@ body {
     color: #abd5f3;
 }
 
+/* Mannequin d'Équipement (6 Slots) */
+.equipment-mannequin-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.equipment-slot-card {
+    background: #14101c;
+    border: 1px solid #3d324f;
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.equipment-slot-card.equipped {
+    border-color: var(--border-gold);
+    background: #1c1527;
+}
+
+.slot-icon-badge {
+    font-size: 2rem;
+    width: 44px;
+    height: 44px;
+    background: #251d33;
+    border: 1px solid #4a3e5c;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-info {
+    flex: 1;
+}
+
+.slot-title {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.slot-empty-label {
+    font-size: 0.9rem;
+    color: #635773;
+    font-style: italic;
+}
+
+/* Sac à Dos & Items */
+.bag-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.bag-item-card {
+    background: #14101c;
+    border: 1px solid #3d324f;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.item-icon-box {
+    font-size: 2.2rem;
+    width: 48px;
+    height: 48px;
+    background: #251c33;
+    border: 1px solid #4a3e5c;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-name.common { color: var(--rarity-common); }
+.item-name.rare { color: var(--rarity-rare); text-shadow: 0 0 6px rgba(93, 173, 226, 0.4); }
+.item-name.epic { color: var(--rarity-epic); text-shadow: 0 0 6px rgba(175, 122, 197, 0.4); }
+.item-name.legendary { color: var(--rarity-legendary); text-shadow: 0 0 8px rgba(243, 156, 18, 0.6); }
+
+.item-bonus-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.78rem;
+    color: var(--accent-gold);
+}
+
+.item-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 100px;
+}
+
+.badge-qty {
+    background: #e67e22;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
 /* Combat Log Arena */
 .battle-arena-grid {
     display: grid;
@@ -331,6 +450,11 @@ body {
 
 .combat-log-entry.victory {
     color: #2ecc71;
+    font-weight: bold;
+}
+
+.combat-log-entry.loot {
+    color: #f39c12;
     font-weight: bold;
 }
 

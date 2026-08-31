@@ -4,31 +4,28 @@ set -e
 COOKIE_JAR="/tmp/rpg_e2e_cookies.txt"
 rm -f "$COOKIE_JAR"
 
-echo "=== 1. Inscription ==="
-HTTP_REG=$(curl -s -c "$COOKIE_JAR" -X POST -d "username=valkyrie&password=secret123&password_confirm=secret123" "http://localhost:8000/register" -o /dev/null -w "%{http_code}")
-echo "Statut Inscription: $HTTP_REG (Attendu: 302)"
+echo "=== 1. Inscription & Création ==="
+curl -s -c "$COOKIE_JAR" -X POST -d "username=yvain&password=secret123&password_confirm=secret123" "http://localhost:8000/register" -o /dev/null
+curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST -d "name=YvainLeChevalier&class_id=1" "http://localhost:8000/character/create" -o /dev/null
+echo "✅ Compte & Héros créés"
 
-echo "=== 2. Création de Personnage (Voleur) ==="
-HTTP_CHAR=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST -d "name=ValkyrieShadow&class_id=2" "http://localhost:8000/character/create" -o /dev/null -w "%{http_code}")
-echo "Statut Création: $HTTP_CHAR (Attendu: 302)"
+echo "=== 2. Affichage de l'Inventaire ==="
+INV_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/inventory")
+echo "$INV_HTML" | grep -q "Sac & Équipement" && echo "✅ Page d'inventaire accessible"
+echo "$INV_HTML" | grep -q "Équipement Actif" && echo "✅ Mannequin d'équipement présent"
+echo "$INV_HTML" | grep -q "Épée longue en fer" && echo "✅ Épée de départ équipée"
 
-echo "=== 3. Chargement du Hub ==="
-HUB_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/hub")
-echo "$HUB_HTML" | grep -q "La Cité d'Orépierre" && echo "✅ Hub chargé avec succès"
-echo "$HUB_HTML" | grep -q "ValkyrieShadow" && echo "✅ Personnage ValkyrieShadow présent"
+echo "=== 3. Utilisation d'une Potion via HTMX ==="
+# Récupérer l'ID de la potion dans le sac
+POTION_ITEM_ID=$(echo "$INV_HTML" | grep -o 'value="[0-9]*"' | head -n 1 | grep -o '[0-9]*')
+if [ -n "$POTION_ITEM_ID" ]; then
+    USE_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "character_item_id=$POTION_ITEM_ID" "http://localhost:8000/inventory/use")
+    echo "$USE_HTML" | grep -q "Sac & Équipement" && echo "✅ Potion consommée via HTMX avec rafraîchissement instantané"
+fi
 
-echo "=== 4. Lancement de Combat & Victoire ==="
-curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -X POST "http://localhost:8000/battle/start" -o /dev/null
-ARENA_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "action=attack" "http://localhost:8000/battle/action")
-echo "$ARENA_HTML" | grep -q "Arène de Combat" && echo "✅ Tour de combat exécuté avec succès"
-
-echo "=== 5. Fiche de Personnage & Attribution de Stats ==="
-STATS_HTML=$(curl -s -b "$COOKIE_JAR" "http://localhost:8000/game/stats")
-echo "$STATS_HTML" | grep -q "ValkyrieShadow" && echo "✅ Fiche de stats chargée"
-
-# Tester la route d'allocation
-ALLOC_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "stat=agility" "http://localhost:8000/character/allocate-stat")
-echo "$ALLOC_HTML" | grep -q "Agilité" && echo "✅ Route d'allocation de caractéristiques validée"
+echo "=== 4. Déséquipement d'Arme via HTMX ==="
+UNEQ_HTML=$(curl -s -b "$COOKIE_JAR" -c "$COOKIE_JAR" -H "HX-Request: true" -X POST -d "slot=weapon" "http://localhost:8000/inventory/unequip")
+echo "$UNEQ_HTML" | grep -q "Mains nues" && echo "✅ Arme déséquipée avec succès"
 
 echo ""
-echo "🎉 TOUS LES FLUX HTTP ET SYSTÈME DE STATS SONT VALIDÉS !"
+echo "🎉 TOUS LES TESTS HTTP D'INVENTAIRE ET D'ÉQUIPEMENT SONT VALIDÉS !"

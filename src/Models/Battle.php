@@ -89,7 +89,7 @@ class Battle {
     }
 
     /**
-     * Résolution du tour de combat
+     * Résolution du tour de combat avec statistiques effectives & butin d'équipement
      */
     public static function processTurn(int $battleId, string $action): array {
         $battle = self::getById($battleId);
@@ -97,7 +97,7 @@ class Battle {
             return ['error' => 'Ce combat est déjà terminé.'];
         }
 
-        $char = Character::findById((int)$battle['character_id']);
+        $char = Character::getEffectiveStats((int)$battle['character_id']);
         if (!$char) {
             return ['error' => 'Personnage introuvable.'];
         }
@@ -111,8 +111,8 @@ class Battle {
         $rewards = null;
 
         if ($action === 'flee') {
-            // Chance de fuite basée sur l'agilité
-            $fleeChance = 50 + ($char['agility'] - $battle['monster_agility']) * 3;
+            // Chance de fuite basée sur l'agilité effective
+            $fleeChance = 50 + ($char['effective_agi'] - $battle['monster_agility']) * 3;
             $fleeChance = max(20, min(85, $fleeChance));
             $roll = rand(1, 100);
 
@@ -126,24 +126,17 @@ class Battle {
         } elseif ($action === 'attack') {
             // 1. Attaque du joueur
             $hitRoll = rand(1, 100);
-            $dodgeChance = max(5, min(30, (int)$battle['monster_agility'] - (int)$char['agility']));
+            $dodgeChance = max(5, min(30, (int)$battle['monster_agility'] - (int)$char['effective_agi']));
 
             if ($hitRoll <= $dodgeChance) {
                 self::addLog($battleId, $turn, 'player', 'miss', 0, "💨 Le {$battle['monster_name']} esquive agilement votre assaut !");
             } else {
-                $critChance = 5 + (int)floor($char['agility'] / 3);
+                $critChance = 5 + (int)floor($char['effective_agi'] / 3);
                 $isCrit = rand(1, 100) <= $critChance;
 
-                // Formule de dégâts selon la classe
-                if ($char['class_code'] === 'mage') {
-                    $baseDamage = rand((int)floor($char['intelligence'] * 0.8), (int)floor($char['intelligence'] * 1.4));
-                } elseif ($char['class_code'] === 'rogue') {
-                    $baseDamage = rand((int)floor($char['agility'] * 0.7), (int)floor($char['agility'] * 1.3));
-                } else {
-                    $baseDamage = rand((int)floor($char['strength'] * 0.7), (int)floor($char['strength'] * 1.3));
-                }
+                $baseDmgRoll = rand((int)floor($char['total_attack'] * 0.85), (int)ceil($char['total_attack'] * 1.25));
+                $damage = max(1, $baseDmgRoll - (int)floor($battle['monster_defense'] * 0.5));
 
-                $damage = max(1, $baseDamage - (int)floor($battle['monster_defense'] * 0.5));
                 if ($isCrit) {
                     $damage = (int)floor($damage * 1.8);
                     self::addLog($battleId, $turn, 'player', 'crit', $damage, "💥 **COUP CRITIQUE !** Vous infligez **{$damage}** dégâts au {$battle['monster_name']} !");
@@ -170,12 +163,27 @@ class Battle {
                     'new_level' => $levelResult['new_level'] ?? $char['level'],
                     'title' => $levelResult['title'] ?? $char['title'],
                     'stat_points_gained' => $levelResult['stat_points_gained'] ?? 0,
-                    'gold_bonus_gained' => $levelResult['gold_bonus_gained'] ?? 0
+                    'gold_bonus_gained' => $levelResult['gold_bonus_gained'] ?? 0,
+                    'slots_gained' => $levelResult['slots_gained'] ?? 0
                 ];
 
                 self::addLog($battleId, $turn, 'system', 'victory', 0, "🏆 **VICTOIRE !** Le {$battle['monster_name']} s'effondre. Vous gagnez **+{$xpReward} XP** et **+{$goldReward} pièces d'or** !");
+
+                // Tirage de butin aléatoire (35% de chance)
+                if (rand(1, 100) <= 35) {
+                    $droppedItem = Item::getRandomLootForLevel((int)$battle['monster_level']);
+                    if ($droppedItem) {
+                        $addResult = Inventory::addItem((int)$char['id'], (int)$droppedItem['id'], 1);
+                        if ($addResult['success']) {
+                            self::addLog($battleId, $turn, 'system', 'loot', 0, "🎁 **BUTIN TROUVÉ !** Vous ramassez un(e) **{$droppedItem['name']}** {$droppedItem['icon']} !");
+                        } else {
+                            self::addLog($battleId, $turn, 'system', 'loot_full', 0, "⚠️ Le monstre a laissé tomber un(e) **{$droppedItem['name']}**, mais votre sac est plein !");
+                        }
+                    }
+                }
+
                 if ($levelResult['leveled_up']) {
-                    self::addLog($battleId, $turn, 'system', 'levelup', 0, "✨ **FÉLICITATIONS !** Vous atteignez le **Niveau {$levelResult['new_level']}** (Titre : *{$levelResult['title']}*) ! Récompenses : **+{$levelResult['gold_bonus_gained']} 💰 or**, **+{$levelResult['stat_points_gained']} points d'attributs** à répartir sur votre fiche de héros !");
+                    self::addLog($battleId, $turn, 'system', 'levelup', 0, "✨ **FÉLICITATIONS !** Vous atteignez le **Niveau {$levelResult['new_level']}** (*{$levelResult['title']}*) ! Récompenses : **+{$levelResult['gold_bonus_gained']} 💰 or**, **+{$levelResult['stat_points_gained']} points d'attributs** et **+{$levelResult['slots_gained']} slot d'inventaire** !");
                 }
             }
         }
@@ -183,19 +191,19 @@ class Battle {
         // 2. Riposte du monstre si le combat continue
         if (!$isFinished && $action !== 'flee_success') {
             $monsterHitRoll = rand(1, 100);
-            $playerDodgeChance = max(5, min(40, (int)$char['agility'] - (int)$battle['monster_agility']));
+            $playerDodgeChance = max(5, min(40, (int)$char['effective_agi'] - (int)$battle['monster_agility']));
 
             if ($monsterHitRoll <= $playerDodgeChance) {
                 self::addLog($battleId, $turn, 'monster', 'miss', 0, "🛡️ Vous esquivez prestement la riposte du {$battle['monster_name']} !");
             } else {
                 $monsterBaseDmg = rand((int)floor($battle['monster_attack'] * 0.7), (int)floor($battle['monster_attack'] * 1.2));
-                $playerDef = (int)floor($char['strength'] * 0.4);
+                $playerDef = (int)$char['total_defense'];
                 $monsterDmg = max(1, $monsterBaseDmg - $playerDef);
 
                 $playerHp = max(0, $playerHp - $monsterDmg);
                 Character::updateHp($char['id'], $playerHp);
 
-                self::addLog($battleId, $turn, 'monster', 'hit', $monsterDmg, "🩸 Le {$battle['monster_name']} vous attaque et vous inflige **{$monsterDmg}** points de dégâts !");
+                self::addLog($battleId, $turn, 'monster', 'hit', $monsterDmg, "🩸 Le {$battle['monster_name']} vous attaque et vous inflige **{$monsterDmg}** points de dégâts (Armure: -{$playerDef}) !");
 
                 if ($playerHp <= 0) {
                     $isFinished = true;
@@ -222,7 +230,7 @@ class Battle {
 
         return [
             'battle' => self::getById($battleId),
-            'character' => Character::findById($char['id']),
+            'character' => Character::getEffectiveStats((int)$char['id']),
             'logs' => self::getLogs($battleId),
             'is_finished' => $isFinished,
             'winner' => $winner,

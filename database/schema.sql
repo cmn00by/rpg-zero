@@ -5,6 +5,8 @@ USE `rpg_zero`;
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
+DROP TABLE IF EXISTS `character_items`;
+DROP TABLE IF EXISTS `items`;
 DROP TABLE IF EXISTS `battle_logs`;
 DROP TABLE IF EXISTS `active_battles`;
 DROP TABLE IF EXISTS `characters`;
@@ -38,6 +40,7 @@ CREATE TABLE `levels` (
     `xp_required` INT NOT NULL,
     `stat_points_reward` INT NOT NULL DEFAULT 5,
     `gold_reward` INT NOT NULL DEFAULT 50,
+    `inventory_slots_reward` INT NOT NULL DEFAULT 1,
     `title` VARCHAR(50) NOT NULL DEFAULT 'Aventurier'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -52,6 +55,7 @@ CREATE TABLE `characters` (
     `xp_next` INT NOT NULL DEFAULT 100,
     `gold` INT NOT NULL DEFAULT 50,
     `stat_points` INT NOT NULL DEFAULT 0,
+    `inventory_slots` INT NOT NULL DEFAULT 10,
     `current_hp` INT NOT NULL DEFAULT 100,
     `max_hp` INT NOT NULL DEFAULT 100,
     `current_ap` INT NOT NULL DEFAULT 20,
@@ -63,6 +67,40 @@ CREATE TABLE `characters` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`class_id`) REFERENCES `character_classes`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `items` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `code` VARCHAR(50) NOT NULL UNIQUE,
+    `name` VARCHAR(80) NOT NULL,
+    `type` ENUM('weapon', 'shield', 'head', 'chest', 'boots', 'ring', 'consumable') NOT NULL,
+    `rarity` ENUM('common', 'rare', 'epic', 'legendary') NOT NULL DEFAULT 'common',
+    `icon` VARCHAR(20) NOT NULL,
+    `description` TEXT,
+    `bonus_attack` INT NOT NULL DEFAULT 0,
+    `bonus_defense` INT NOT NULL DEFAULT 0,
+    `bonus_str` INT NOT NULL DEFAULT 0,
+    `bonus_agi` INT NOT NULL DEFAULT 0,
+    `bonus_int` INT NOT NULL DEFAULT 0,
+    `bonus_hp` INT NOT NULL DEFAULT 0,
+    `bonus_ap` INT NOT NULL DEFAULT 0,
+    `heal_hp` INT NOT NULL DEFAULT 0,
+    `restore_ap` INT NOT NULL DEFAULT 0,
+    `buy_price` INT NOT NULL DEFAULT 10,
+    `sell_price` INT NOT NULL DEFAULT 5,
+    `level_required` INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `character_items` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `character_id` INT NOT NULL,
+    `item_id` INT NOT NULL,
+    `is_equipped` TINYINT(1) NOT NULL DEFAULT 0,
+    `slot_position` VARCHAR(20) NULL,
+    `quantity` INT NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`character_id`) REFERENCES `characters`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`item_id`) REFERENCES `items`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `monsters` (

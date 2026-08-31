@@ -54,6 +54,47 @@ class Character {
         return null;
     }
 
+    public static function getEffectiveStats(int $characterId): array {
+        $char = self::findById($characterId);
+        if (!$char) {
+            return [];
+        }
+
+        $bonus = Inventory::getEquippedBonusTotals($characterId);
+
+        $effStr = (int)$char['strength'] + $bonus['bonus_str'];
+        $effAgi = (int)$char['agility'] + $bonus['bonus_agi'];
+        $effInt = (int)$char['intelligence'] + $bonus['bonus_int'];
+        $effMaxHp = (int)$char['max_hp'] + $bonus['bonus_hp'];
+        $effMaxAp = (int)$char['max_ap'] + $bonus['bonus_ap'];
+
+        $baseDef = (int)floor($effStr * 0.4);
+        $totalDef = $baseDef + $bonus['bonus_defense'];
+
+        // Base damage calculation by class
+        if ($char['class_code'] === 'mage') {
+            $baseAtk = (int)floor($effInt * 1.1);
+        } elseif ($char['class_code'] === 'rogue') {
+            $baseAtk = (int)floor($effAgi * 1.0);
+        } else {
+            $baseAtk = (int)floor($effStr * 1.0);
+        }
+        $totalAtk = $baseAtk + $bonus['bonus_attack'];
+
+        return array_merge($char, [
+            'effective_str' => $effStr,
+            'effective_agi' => $effAgi,
+            'effective_int' => $effInt,
+            'effective_max_hp' => $effMaxHp,
+            'effective_max_ap' => $effMaxAp,
+            'bonus_attack' => $bonus['bonus_attack'],
+            'bonus_defense' => $bonus['bonus_defense'],
+            'total_attack' => $totalAtk,
+            'total_defense' => $totalDef,
+            'equipped_bonuses' => $bonus
+        ]);
+    }
+
     public static function create(int $userId, int $classId, string $name): int {
         $class = self::getClassById($classId);
         if (!$class) {
@@ -66,11 +107,11 @@ class Character {
         $db = Database::getConnection();
         $stmt = $db->prepare("
             INSERT INTO characters (
-                user_id, class_id, name, title, level, xp, xp_next, gold, stat_points,
+                user_id, class_id, name, title, level, xp, xp_next, gold, stat_points, inventory_slots,
                 current_hp, max_hp, current_ap, max_ap,
                 strength, agility, intelligence, last_activity
             ) VALUES (
-                :user_id, :class_id, :name, 'Novice', 1, 0, :xp_next, 50, 0,
+                :user_id, :class_id, :name, 'Novice', 1, 0, :xp_next, 50, 0, 10,
                 :current_hp, :max_hp, :current_ap, :max_ap,
                 :str, :agi, :int, NOW()
             )
@@ -90,13 +131,38 @@ class Character {
             'int' => $class['base_int'],
         ]);
 
-        return (int)$db->lastInsertId();
+        $charId = (int)$db->lastInsertId();
+
+        // Équipement de départ selon la classe
+        $startWeaponCode = match ($class['code']) {
+            'mage' => 'apprentice_staff',
+            'rogue' => 'steel_dagger',
+            default => 'iron_sword',
+        };
+
+        $startWeapon = Item::getByCode($startWeaponCode);
+        if ($startWeapon) {
+            $stmt = $db->prepare("INSERT INTO character_items (character_id, item_id, is_equipped, slot_position, quantity) VALUES (:cid, :iid, 1, 'weapon', 1)");
+            $stmt->execute(['cid' => $charId, 'iid' => $startWeapon['id']]);
+        }
+
+        $startRobe = Item::getByCode('tattered_robe');
+        if ($startRobe) {
+            $stmt = $db->prepare("INSERT INTO character_items (character_id, item_id, is_equipped, slot_position, quantity) VALUES (:cid, :iid, 1, 'chest', 1)");
+            $stmt->execute(['cid' => $charId, 'iid' => $startRobe['id']]);
+        }
+
+        // Potions de départ dans le sac
+        $potion = Item::getByCode('health_potion_minor');
+        if ($potion) {
+            Inventory::addItem($charId, (int)$potion['id'], 2);
+        }
+
+        return $charId;
     }
 
     /**
      * Calcul de la régénération passive (années 2000 style, optimisé à la volée)
-     * - 1 PA toutes les 60 secondes
-     * - 1 PV toutes les 30 secondes
      */
     public static function applyPassiveRegen(array $char): array {
         $lastActivity = strtotime($char['last_activity']);
@@ -183,10 +249,12 @@ class Character {
         $level = (int)$char['level'];
         $xpNext = (int)$char['xp_next'];
         $statPoints = (int)$char['stat_points'];
+        $invSlots = (int)$char['inventory_slots'];
         $title = $char['title'];
         $leveledUp = false;
         $statPointsGained = 0;
         $goldBonusGained = 0;
+        $slotsGained = 0;
 
         // Gestion du passage de niveau via la table 'levels'
         while ($newXp >= $xpNext) {
@@ -197,16 +265,23 @@ class Character {
             if ($nextLvlConfig) {
                 $statPointsReward = (int)$nextLvlConfig['stat_points_reward'];
                 $goldReward = (int)$nextLvlConfig['gold_reward'];
+                $slotsReward = (int)$nextLvlConfig['inventory_slots_reward'];
                 $title = $nextLvlConfig['title'];
+                
                 $statPoints += $statPointsReward;
                 $newGold += $goldReward;
+                $invSlots += $slotsReward;
+                
                 $statPointsGained += $statPointsReward;
                 $goldBonusGained += $goldReward;
+                $slotsGained += $slotsReward;
             } else {
                 $statPoints += 5;
                 $newGold += 100;
+                $invSlots += 1;
                 $statPointsGained += 5;
                 $goldBonusGained += 100;
+                $slotsGained += 1;
             }
 
             // Calcul du palier d'XP suivant
@@ -232,6 +307,7 @@ class Character {
                 xp_next = :xp_next,
                 gold = :gold,
                 stat_points = :stat_points,
+                inventory_slots = :inv_slots,
                 current_hp = :current_hp,
                 current_ap = :current_ap,
                 last_activity = NOW()
@@ -245,6 +321,7 @@ class Character {
             'xp_next' => $xpNext,
             'gold' => $newGold,
             'stat_points' => $statPoints,
+            'inv_slots' => $invSlots,
             'current_hp' => $currentHp,
             'current_ap' => $currentAp,
             'id' => $id
@@ -255,13 +332,11 @@ class Character {
             'new_level' => $level,
             'title' => $title,
             'stat_points_gained' => $statPointsGained,
-            'gold_bonus_gained' => $goldBonusGained
+            'gold_bonus_gained' => $goldBonusGained,
+            'slots_gained' => $slotsGained
         ];
     }
 
-    /**
-     * Distribution d'un point de caractéristique
-     */
     public static function allocateStat(int $id, string $stat): array {
         $char = self::findById($id);
         if (!$char || (int)$char['stat_points'] <= 0) {
